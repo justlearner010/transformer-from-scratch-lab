@@ -1,0 +1,14 @@
+[project]
+name = "transformer-from-scratch-lab"
+version = "0.1.0"
+description = "Theory-first, autograded Transformer learning lab."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["numpy>=2.2.0"]
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["lab/tests"]
+pythonpath = ["."]
