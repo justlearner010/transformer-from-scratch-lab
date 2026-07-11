@@ -12,15 +12,17 @@
 
 本仓库公开课程材料、题目、函数契约与公开 smoke tests。真正的核心评分器放在本地 `.grader/`（由 `.gitignore` 排除），只输出错误类别和引导，不泄露样例或答案。
 
-## 三周课程
+## 四周高强度课程
 
 | 周 | 主题 | 产出 |
 | --- | --- | --- |
+| 0 | 线性代数、softmax、导数与张量契约预备 | 预备习题与环境检查 |
 | 1 | Q/K/V、缩放点积 attention、softmax | attention 理论题与 Lab 关卡 0–2 |
 | 2 | causal mask、LayerNorm、FFN、残差与 block | 完整机制 Lab 与理论 Homework |
-| 3 | 独立重写、字符级训练、生成与复盘 | 不看 Lab 答案的 mini Transformer demo |
+| 3 | 最小语言模型训练 | 不看答案的字符级 demo |
+| 4 | 综合重构、压力测试与架构复盘 | 闭卷期末作业与大项目设计 memo |
 
-从 [Week 1](weeks/week-01/README.md) 开始。
+从 [Week 0](weeks/week-00/README.md) 开始。每周建议投入 30–35 小时；由掌握度而非外部截止日期推进。
 
 ## 本地运行
 
