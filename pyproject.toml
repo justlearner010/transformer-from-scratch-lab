@@ -10,5 +10,5 @@ dependencies = ["numpy>=2.2.0"]
 dev = ["pytest>=8.0"]
 
 [tool.pytest.ini_options]
-testpaths = ["lab/tests"]
+testpaths = ["lab/tests", "labs"]
 pythonpath = ["."]
