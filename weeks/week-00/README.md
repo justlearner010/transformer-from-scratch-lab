@@ -25,6 +25,7 @@
 1. [材料](../../resources/week-00.md)：带着问题阅读。
 2. [任务](../../tasks/week-00.md)：完成从 token 表到 attention 信息流预演的小步任务。
 3. [概念性作业](../../homework/week-00-concepts.md)：在进入 Lab 前完成推导、边界和全局地位问题。
+   - 需要正式书面版本时使用 [Week 0 Problem Set PDF](../../problem-sets/week-00-problem-set.pdf)。
 4. [Lab](../../labs/week-00/README.md)：立即在约束内完成 shape checker。
 5. [工程性作业](../../homework/week-00-engineering.md)：解释为什么这样设计检查器。
 6. [笔记与 feedback](../../notes/week-00-template.md)：从实际 Lab 和工程问题中记录证据，再进入自主 demo。
