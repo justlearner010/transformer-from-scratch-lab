@@ -7,8 +7,10 @@
 | 关卡 | 目标 | 解锁条件 |
 | --- | --- | --- |
 | 0 | 熟悉函数契约和 shape | 公开 smoke test 可运行。 |
-| 1 | 实现数值稳定的 softmax | hidden autograder 通过。 |
-| 2 | 实现 scaled dot-product attention | hidden autograder 通过。 |
+| 1 | 实现数值稳定的 softmax | hidden autograder 的数值稳定性与轴检查通过。 |
+| 2 | 实现 Q/K/V 投影 | hidden autograder 的 shape、输入不变性和错误输入检查通过。 |
+| 3 | 实现 scaled dot-product attention | hidden autograder 的缩放、权重与输出性质检查通过。 |
+| 4 | 完成故障诊断 | 根据 grader 的类别报告定位一个故意注入的错误，并写下原因与修复验证。 |
 
 ## 运行
 
