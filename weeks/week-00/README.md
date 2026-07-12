@@ -23,6 +23,7 @@
 ## 本周文件与完成顺序
 
 1. [材料](../../resources/week-00.md)：带着问题阅读。
+   - 需要正式排版版本时使用 [Week 0 Resources PDF](../../resources/week-00.pdf)。
 2. [任务](../../tasks/week-00.md)：完成从 token 表到 attention 信息流预演的小步任务。
 3. [概念性作业](../../homework/week-00-concepts.md)：在进入 Lab 前完成推导、边界和全局地位问题。
    - 需要正式书面版本时使用 [Week 0 Problem Set PDF](../../problem-sets/week-00-problem-set.pdf)。

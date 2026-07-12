@@ -1,0 +1,78 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=20mm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{fontspec}
+\usepackage{hyperref}
+\setmainfont{Arial Unicode MS}
+\setmonofont{Menlo}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\definecolor{navy}{HTML}{172554}
+\definecolor{blue}{HTML}{1D4ED8}
+\setlength{\parskip}{0.7em}
+\setlength{\parindent}{0pt}
+\newcommand{\heading}[1]{\section*{\color{blue}#1}}
+\newcommand{\resource}[1]{\subsection*{#1}}
+\begin{document}
+
+\begin{center}
+{\Large\color{navy} Transformer From Scratch Lab}\par
+\vspace{8mm}
+{\huge\color{navy} Week 0 Resources}\par
+\vspace{4mm}
+{\Large 看懂每一步信息如何变化}
+\end{center}
+
+\heading{如何使用这份资源栏}
+本周不泛读。每份材料只服务于从 token 表到 Week 1 attention 的一段信息流。\\
+读完一项后立即回答阅读问题并留下完成证据；答不出时只回读该项，不追加新材料。
+
+\resource{1. Linear Algebra：让 shape 可预测}
+\textbf{链接：}\href{https://d2l.ai/chapter_preliminaries/linear-algebra.html}{D2L 2.3 Linear Algebra}
+
+\textbf{精确范围：}只读 Scalars、Vectors、Matrices、Tensors、Reduction、Non-Reduction Sum。\\
+继续读 Dot Products、Matrix-Vector Products、Matrix-Matrix Multiplication；跳过范数、导数和特征分解。
+
+\textbf{带着的问题读：}若 $X\in\mathbb{R}^{3\times2}$、$W\in\mathbb{R}^{2\times2}$，为什么 $XW\in\mathbb{R}^{3\times2}$？输出元素 $(XW)_{i,j}$ 从哪里来？
+
+\textbf{完成证据：}写出内维度规则，并手算一个输出元素。
+
+\resource{2. Softmax：将 score 变成权重}
+\textbf{链接：}\href{https://d2l.ai/chapter_linear-classification/softmax-regression.html}{D2L 4.1 Softmax Regression}
+
+\textbf{精确范围：}只读 Softmax Operation、Vectorization、Loss Function 与 Information Theory Basics。\\
+本周不实现 softmax regression。
+
+\textbf{带着的问题读：}为什么 score 需要被归一化为权重？为什么
+\[
+\operatorname{softmax}(z)=\operatorname{softmax}(z-\max_i z_i\mathbf{1})
+\]
+允许稳定计算？
+
+\textbf{完成证据：}对 $z=[2,1,0]$ 手算 softmax，并说明同加常数后为何不变。
+
+\resource{3. Queries, Keys, Values：建立 attention 直觉}
+\textbf{链接：}\href{https://d2l.ai/chapter_attention-mechanisms-and-transformers/queries-keys-values.html}{D2L 11.1 Queries, Keys, and Values}
+
+\textbf{精确范围：}只读开头的 Queries, Keys, and Values 定义，以及 attention pooling 的直觉与 summary。\\
+不进入实现代码和后续章节。
+
+\textbf{带着的问题读：}dot product 为什么可以作为 query 与 key 的匹配分数，却不能直接作为最终读取结果？
+
+\textbf{完成证据：}写出一个两 token 的点积例子，并指出它还缺少哪一步才会成为读取权重。
+
+\resource{4. 原始论文：定位完整模型，而非推导公式}
+\textbf{链接：}\href{https://arxiv.org/abs/1706.03762}{Attention Is All You Need}
+
+\textbf{精确范围：}只读 abstract 和 Figure 1。只看 encoder-decoder 的整体数据流；不读公式与第 3 节细节。
+
+\textbf{带着的问题读：}token 的顺序信息、attention 和输出预测大致位于整张图的哪里？
+
+\textbf{完成证据：}画一条从 token 到预测的粗略箭头图，标出 Week 0 已经认识的操作。
+
+\heading{停止规则与下一步}
+完成四项后停止阅读，转入 Week 0 的任务与概念作业。Week 1 才精读论文第 $3.2.1$ 节的 scaled dot-product attention。
+
+\vfill
+\begin{center}\small Week 0 Resources\end{center}
+\end{document}
