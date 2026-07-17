@@ -130,7 +130,21 @@ def matmul_from_entries(left: np.ndarray, right: np.ndarray) -> np.ndarray:
     Raises:
         ValueError: If the inputs cannot be multiplied.
     """
+    require_multipliable(left,right)
     
+    new_row = matrix_shape(left,name="left")[0]
+    new_col = matrix_shape(right,name="right")[1]
+    res = np.empty((new_row, new_col))
+
+
+    for i in range (0,matrix_shape(left,name="left")[0]):
+        for j in range (0,matrix_shape(right,name="right")[1]):
+            res[i][j] = dot_entry(left,right,i,j)
+    
+    return res
+
+
+
     raise NotImplementedError("完成关卡 5：由单个位置组装完整矩阵乘积")
 
 
@@ -146,4 +160,18 @@ def describe_product(left: np.ndarray, right: np.ndarray) -> str:
     Raises:
         ValueError: If either input is not a usable matrix.
     """
+    left_shape = (matrix_shape(left,name="left"))
+    right_shape = matrix_shape(right,name="right")
+
+    try:
+        require_multipliable(left,right)
+    except ValueError :
+        return (f"left {left_shape} 与 right {right_shape} 不能相乘："
+            f"left 的列数 {left_shape[1]} "
+            f"不等于 right 的行数 {right_shape[0]}。")
+    
+
+    output_shape = (left_shape[0],right_shape[1])
+
+    return (f"左边矩阵的shape是{left_shape},右边矩阵的shape是{right_shape},结果矩阵的shape是{output_shape}")
     raise NotImplementedError("完成关卡 6：写出矩阵乘法的可读诊断")
