@@ -34,4 +34,6 @@ uv run python labs/week-00/run_grade.py
 
 ## Lab 完成后
 
-立刻完成 [工程性作业](../../homework/week-00-engineering.md)，再用 [笔记模板](../../notes/week-00-template.md) 记录一个真实错误或你为预防错误做的检查。随后开始 Week 1。
+立刻完成 [工程性作业](../../resources/week-00/homework.md)，再用
+[笔记模板](../../resources/week-00/notes-template.md) 记录一个真实错误或你为
+预防错误做的检查。随后开始 Week 1。
