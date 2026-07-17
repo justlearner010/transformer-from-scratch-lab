@@ -20,7 +20,7 @@
 
 ## 课程文件组织：周负责导航，内容各自独立
 
-`weeks/week-XX/README.md` 只承担课程导航：说明本周为什么出现、来自哪一周、通向哪一周，以及七步任务的完成顺序。具体内容不得混杂在周 README 中：
+`weeks/week-XX/README.md` 只承担课程导航：说明本周为什么出现、来自哪一周、通向哪一周，以及七步任务的完成顺序。具体内容不得混杂在周 README 中。完整的路径、名称与标题接口见 [Week Module Contract](week-module-contract.md)：
 
 ```text
 weeks/week-XX/README.md       本周导言、依赖和链接入口；周目录只保留此文件
