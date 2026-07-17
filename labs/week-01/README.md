@@ -1,6 +1,6 @@
 # Week 1 Lab：从契约实现 Attention
 
-你将自行实现 `lab/src/attention.py` 的函数。只允许使用 NumPy；不得复制外部实现或查看隐藏评分样例。
+你将自行实现 `labs/week-01/src/attention.py` 的函数。只允许使用 NumPy；不得复制外部实现或查看隐藏评分样例。
 
 ## 关卡
 
@@ -15,8 +15,8 @@
 ## 运行
 
 ```bash
-uv run pytest
-uv run python lab/run_grade.py
+uv run pytest labs/week-01/tests -v
+uv run python labs/week-01/run_grade.py
 ```
 
 公开测试只检查脚手架；本地 `.grader/` 存在时，评分器才会执行隐藏检查并显示失败类别。

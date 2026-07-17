@@ -23,16 +23,15 @@
 `weeks/week-XX/README.md` 只承担课程导航：说明本周为什么出现、来自哪一周、通向哪一周，以及七步任务的完成顺序。具体内容不得混杂在周 README 中：
 
 ```text
-weeks/week-XX/README.md       本周导言、依赖和链接入口
-resources/week-XX.md          精确材料范围、阅读问题和完成证据
+weeks/week-XX/README.md       本周导言、依赖和链接入口；周目录只保留此文件
+resources/week-XX/            材料、练习、Lab 前后作业与笔记模板
 tasks/week-XX.md              小步任务链、Lab 前置练习和完成证据
-homework/week-XX-concepts.md  Lab 前的概念性作业
-homework/week-XX-engineering.md Lab 后的工程性作业
-notes/week-XX-template.md     摘抄笔记、Lab feedback 与工程 feedback 模板
 labs/week-XX/                 脚手架、公开测试与运行入口
 ```
 
-这种拆分让学习者进入一个 Week 时只看导航；做某一步时才打开对应文件，避免任务、阅读和作业在同一页竞争注意力。
+这种拆分让学习者进入一个 Week 时只看导航；做某一步时才打开资源、任务
+或 Lab 的对应文件，避免任务、阅读和作业在同一页竞争注意力。新增阶段
+必须复用该路径模式，并验证链接、测试发现与评分命令在迁移后仍有效。
 
 ## 作业设计：先理论，后工程
 
