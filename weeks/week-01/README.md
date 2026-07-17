@@ -51,12 +51,12 @@ Week 0 矩阵投影
 
 ## 门控顺序
 
-1. 完成 [课前引导](pre-class.md) 的检索桥接。
-2. 阅读 [材料](materials.md)，完成其中四个问题。
+1. 完成 [课前引导](../../resources/week-01/pre-class.md) 的检索桥接。
+2. 阅读 [材料](../../resources/week-01/materials.md)，完成其中四个问题。
 3. 依次完成 [知识门控任务](../../tasks/week-01.md) 的 Gate 1–4。
-4. 通过 Gate 4 后，独立完成 `lab/` 的 Gate 0–3。
-5. 完成 [Lab 后工程作业](homework.md)、故障诊断和自主 demo。
-6. 用 [课后笔记模板](notes-template.md) 记录真实证据，再判定是否解锁
+4. 通过 Gate 4 后，独立完成 [Lab](../../labs/week-01/README.md) 的 Gate 0–3。
+5. 完成 [Lab 后工程作业](../../resources/week-01/homework.md)、故障诊断和自主 demo。
+6. 用 [课后笔记模板](../../resources/week-01/notes-template.md) 记录真实证据，再判定是否解锁
    causal mask。
 
 ## 本周完成定义

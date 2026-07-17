@@ -1,6 +1,6 @@
 # Gate 1–4：概念作业（先于 Lab）
 
-请先手算、预测和解释；不要查看 `lab/src/attention.py` 的实现答案或隐藏
+请先手算、预测和解释；不要查看 `labs/week-01/src/attention.py` 的实现答案或隐藏
 评分样例。每个 gate 达到进入条件后再继续。
 
 ## Gate 1（P1）：Q/K/V 投影与角色
