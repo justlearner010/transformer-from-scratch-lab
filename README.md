@@ -52,13 +52,8 @@ token 矩阵与 shape
 | [`labs/`](labs/) | 可运行的 starter code、公开测试与评分入口。 |
 | [`docs/`](docs/) | 课程设计与运行规则；进入具体学习前不必通读。 |
 
-Week 1 的直接路径是：
-
-1. [课前检索](resources/week-01/pre-class.md)
-2. [阅读材料](resources/week-01/materials.md)
-3. [知识门控任务](tasks/week-01.md)
-4. [Attention Lab](labs/week-01/README.md)
-5. [工程作业与笔记模板](resources/week-01/homework.md)
+具体的 Week 1 执行顺序与完成门槛见
+[Week 1 导航页](weeks/week-01/README.md)；不要把本 README 当作任务清单。
 
 ## 本地运行
 
