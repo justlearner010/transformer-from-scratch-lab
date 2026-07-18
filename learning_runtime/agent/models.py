@@ -10,6 +10,29 @@ class PresentationKind(StrEnum):
     FEEDBACK = "feedback"
 
 
+class AgentCommand(StrEnum):
+    SUBMIT = "submit"
+    RETRY = "retry"
+    STATUS = "status"
+    NEXT = "next"
+    HELP = "help"
+    QUIT = "quit"
+
+
+class InputKind(StrEnum):
+    COMMAND = "command"
+    MESSAGE = "message"
+    UNKNOWN_COMMAND = "unknown_command"
+    EMPTY = "empty"
+
+
+@dataclass(frozen=True)
+class AgentInput:
+    kind: InputKind
+    raw: str
+    command: AgentCommand | None = None
+
+
 @dataclass(frozen=True)
 class PresentationRequest:
     kind: PresentationKind
