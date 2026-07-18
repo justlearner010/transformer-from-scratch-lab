@@ -47,7 +47,12 @@ def test_week_01_manifest_defines_the_committed_answer_contract() -> None:
     )
     gate = manifest.gate("week-01-gate-0")
     assert gate.submission.artifact_path == "homework_answer/week-01/gate-00.md"
-    assert gate.submission.attachment_policy == "at-least-one"
+    assert gate.submission.required_sections == (
+        "闭卷答案",
+        "推导或机制解释",
+        "提交自检",
+    )
+    assert gate.submission.attachment_policy == "optional"
 
 
 def test_duplicate_gate_id_is_rejected(tmp_path: Path) -> None:
