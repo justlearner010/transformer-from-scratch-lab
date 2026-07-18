@@ -87,6 +87,8 @@ gates:
     pass_rule: all-required
     rollback_target: week-00-review
     escalation_conditions: [前置证据冲突, Week 0 产物不可访问]
+    rubric_ref: course-manifests/rubrics/week-01.yaml
+    rubric_version: 1
     submission:
       artifact_path: homework_answer/week-01/gate-00.md
       required_sections: *answer_sections

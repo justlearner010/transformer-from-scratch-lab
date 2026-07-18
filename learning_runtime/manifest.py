@@ -226,8 +226,23 @@ def load_manifest(path: Path, repo_root: Path) -> CourseManifest:
                     for item in _require_list(row.get("checks"), f"{gate_id}.checks")
                 ),
                 submission=submission,
+                rubric_ref=(
+                    str(row["rubric_ref"]) if row.get("rubric_ref") else None
+                ),
+                rubric_version=(
+                    int(row["rubric_version"])
+                    if row.get("rubric_version") is not None
+                    else None
+                ),
             )
         )
+
+        if gates[-1].rubric_ref:
+            _validate_path(repo_root, gates[-1].rubric_ref)
+        if bool(gates[-1].rubric_ref) != (gates[-1].rubric_version is not None):
+            raise ManifestError(
+                f"{gate_id} must define rubric_ref and rubric_version together"
+            )
 
     gate_ids = {gate.gate_id for gate in gates}
     for gate in gates:

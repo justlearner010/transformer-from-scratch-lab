@@ -1,0 +1,17 @@
+rubrics:
+  - rubric_id: week-01-gate-0-rubric
+    version: 1
+    gate_id: week-01-gate-0
+    criteria:
+      - criterion_id: shape-bridge-complete
+        standard: 学生必须给出 Q、K、V、QK^T、weights、weights@V 的闭合 shape 链，并解释 K.T。
+        passed_when:
+          - 所有 shape 在同一组符号约定下闭合
+          - K.T 的转置维度和语义解释一致
+        failed_when:
+          - shape 链存在明确矛盾
+          - 把 K.T 解释成对 V 的转置或其他错误机制
+        insufficient_when:
+          - 缺少关键 shape
+          - 没有解释 K.T
+        allowed_failure_modes: [reinforce, diagnose]

@@ -64,6 +64,8 @@ class GateDefinition:
     action: str
     checks: tuple[str, ...]
     submission: SubmissionDefinition
+    rubric_ref: str | None = None
+    rubric_version: int | None = None
 
 
 @dataclass(frozen=True)
