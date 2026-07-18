@@ -7,6 +7,10 @@ from learning_runtime.verification.models import (
 )
 
 
+class VerificationProviderError(RuntimeError):
+    """A recoverable verifier-provider failure."""
+
+
 class Verifier(Protocol):
     identity: VerifierIdentity
 

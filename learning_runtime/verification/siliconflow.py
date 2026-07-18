@@ -4,13 +4,14 @@ import mimetypes
 import os
 from typing import Mapping
 
-from openai import OpenAI
+from openai import OpenAI, OpenAIError
 
 from learning_runtime.verification.models import (
     RawVerificationResponse,
     VerificationRequest,
     VerifierIdentity,
 )
+from learning_runtime.verification.protocol import VerificationProviderError
 
 
 DEFAULT_BASE_URL = "https://api.siliconflow.cn/v1"
@@ -22,7 +23,7 @@ class SiliconFlowConfigError(ValueError):
     """Raised for missing provider configuration without exposing secrets."""
 
 
-class SiliconFlowResponseError(ValueError):
+class SiliconFlowResponseError(VerificationProviderError):
     """Raised when provider output is empty or malformed."""
 
 
@@ -110,6 +111,8 @@ class SiliconFlowVerifier:
             )
             text = response.choices[0].message.content
             payload = json.loads(text)
+        except OpenAIError as error:
+            raise SiliconFlowResponseError("SiliconFlow request failed") from error
         except (AttributeError, IndexError, TypeError, json.JSONDecodeError) as error:
             raise SiliconFlowResponseError("invalid SiliconFlow JSON response") from error
         if not isinstance(payload, Mapping):

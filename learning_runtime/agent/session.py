@@ -8,7 +8,10 @@ from learning_runtime.agent.models import (
 )
 from learning_runtime.agent.protocol import ConversationPresenter
 from learning_runtime.runtime import LearningRuntime
-from learning_runtime.verification.protocol import Verifier
+from learning_runtime.schemas import GateStatus
+from learning_runtime.verification.protocol import Verifier, VerificationProviderError
+from learning_runtime.verification.registry import EvaluationConflictError
+from learning_runtime.verification.validator import VerificationOutputError
 
 
 HELP_TEXT = "可用命令：/submit /retry /status /next /help /quit"
@@ -57,7 +60,41 @@ class AgentSession:
         return self._handle_mutating(parsed.command)
 
     def _handle_mutating(self, command: AgentCommand) -> AgentTurn:
-        raise NotImplementedError(command)
+        state = self.runtime.get_state()
+        if command is AgentCommand.SUBMIT:
+            try:
+                self.runtime.submit_answer(state.current_gate)
+            except (ValueError, KeyError) as error:
+                return AgentTurn(
+                    f"提交检查失败：{error}\n"
+                    "请完成作答与附件，由你本人手动 commit 后再输入 /submit。"
+                )
+        elif command is AgentCommand.RETRY:
+            if state.gate_status is not GateStatus.EVIDENCE_PENDING:
+                return AgentTurn("只有 evidence_pending 状态可以 /retry。")
+        else:
+            raise AssertionError(f"unhandled command: {command}")
+
+        if self.verifier is None:
+            return AgentTurn(
+                "证据已记录，但 Verifier 尚未配置；配置后输入 /retry。"
+            )
+        try:
+            receipt = self.runtime.evaluate_current(self.verifier)
+        except (
+            EvaluationConflictError,
+            VerificationOutputError,
+            VerificationProviderError,
+        ) as error:
+            return AgentTurn(
+                "判定未完成，状态保持 evidence_pending；恢复后输入 /retry。"
+                f"错误类型：{type(error).__name__}"
+            )
+        return self._present(
+            PresentationKind.FEEDBACK,
+            self.runtime.next_action(),
+            decision=receipt.decision,
+        )
 
     def _present(
         self,
