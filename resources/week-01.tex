@@ -1,0 +1,123 @@
+\documentclass[11pt,a4paper]{article}
+\newcommand{\PublicationLabel}{Week 1 Learning Guide}
+\input{../pdf/course-preamble.tex}
+\hypersetup{pdftitle={Week 1 Learning Guide - Attention 如何按内容读取信息}}
+
+\begin{document}
+\CourseCover
+  {Week 1 Learning Guide}
+  {Attention 如何按内容读取信息？}
+  {独立解释、实现并诊断单头 scaled dot-product attention。}
+  {在同一数据流中判断 causal mask 应插入的位置。}
+
+\section{开始之前}
+
+本周只处理单样本、单头、NumPy 前向计算，不进入 batch、多头、位置编码、Transformer block 或训练。
+
+\textbf{闭卷桥接：}令 $X$ 为 $(3,4)$，三个投影矩阵均为 $(4,2)$。不看代码写出 $Q$、$K$、$V$、$QK^\top$、weights 和 $\text{weights}\,V$ 的 shape，并解释 $\text{scores}[i,j]$ 中 $i$ 与 $j$ 各指向谁。
+
+若无法解释 $K^\top$ 或内维度，回到 Week 0；不要靠运行 Lab 猜 shape。
+
+\textbf{本周规则：}
+\begin{itemize}
+\item 先预测、手算和解释，再进入 Lab。
+\item hidden grader 只返回失败类别与思考提示，不提供样例或答案。
+\item 一次运行成功不等于掌握；还需要真实故障和独立迁移证据。
+\end{itemize}
+
+\section{本周 Gate 路线}
+
+\Gate{Gate 0：调用 Week 0 前置能力}{所有 shape 闭合，能解释 $K^\top$，并区分 score、weight 与 output；否则回退 Week 0。}
+
+\Gate{Gate 1：Q/K/V 的职责}{完成一张 Q/K/V shape 表，并预测只改变 $W_V$ 时哪些量保持不变。}
+
+\Gate{Gate 2：score 的行列语义}{手算两个 queries 对三个 keys 的 score，解释 $\text{scores}[i,j]$，并构造一次转置错误。}
+
+\Gate{Gate 3：缩放与 stable softmax}{证明平移不变性，处理 $[1000,999,998]$，构造错误 axis 反例，并解释 $\sqrt{d_k}$。}
+
+\Gate{Gate 4：从 weights 读取 V}{先预测后验证一次“只改变 V”的实验，并解释输出宽度为何来自 V。}
+
+\Gate{Gate 5：受约束实现}{依次通过 softmax、Q/K/V 投影和 scaled dot-product attention 的公开与 hidden 检查。}
+
+\Gate{Gate 6：故障诊断与独立迁移}{解释一次真实或主动注入错误，并完成不复制 Lab 内部实现的 attention inspector。}
+
+\section{精确阅读材料}
+
+\subsection{1. DeepLearning.AI：先建立整体直觉}
+\textbf{链接：}\href{https://www.deeplearning.ai/courses/transformers-in-practice/}{Transformers in Practice}
+
+\textbf{精确范围：}Module 2 `LLM internals and attention` 中的 Attention（8 分钟）、Visualization: Decoder-Only Transformers（10 分钟）和 Visualization: Interpretable Attention Heads（10 分钟）。只建立直觉，不把可视化当成公式或实现答案。
+
+\textbf{阅读问题：}一个 token 的表示何时开始依赖其他 token？可视化与 Q/K/V 计算之间还缺什么机制解释？
+
+\textbf{完成证据：}记录页面显示的三个 lesson 名称，并画一条 token 表到 attention output 的粗略箭头图。
+
+\subsection{2. D2L 11.1：分开 query、key 与 value}
+\textbf{链接：}\href{https://d2l.ai/chapter_attention-mechanisms-and-transformers/queries-keys-values.html}{Queries, Keys, and Values}
+
+\textbf{精确范围：}只读 11.1.1 的定义、attention pooling 公式与图 11.1.1，再读 11.1.2 Summary；跳过框架代码与练习。
+
+\textbf{阅读问题：}匹配权重和被读取内容分别由谁决定？
+
+\textbf{完成证据：}用自己的两个 key-value 对构造一个 query，并分别解释 Q、K、V。
+
+\subsection{3. D2L 11.3：读懂 score、缩放与输出}
+\textbf{链接：}\href{https://d2l.ai/chapter_attention-mechanisms-and-transformers/attention-scoring-functions.html}{Attention Scoring Functions}
+
+\textbf{精确范围：}读导言、11.3.1、11.3.2.1 的归一化语义，以及 11.3.3 的公式 (11.3.6) 与 shape；跳过 batch 代码、additive attention 和练习。
+
+\textbf{阅读问题：}为什么 score 沿 key 维竞争？为什么缩放依赖 $d_k$？输出宽度为什么来自 V？
+
+\textbf{完成证据：}写出 $QK^\top$、weights、$\text{weights}\,V$ 的 shape，并构造错误 axis 反例。
+
+\subsection{4. 原始论文 3.2.1：回到公式定义}
+\textbf{链接：}\href{https://arxiv.org/abs/1706.03762}{Attention Is All You Need}
+
+\textbf{精确范围：}只读 3.2.1 Scaled Dot-Product Attention 的公式、缩放理由与文字说明；跳过 3.2.2 multi-head、后续 block 与训练。
+
+\textbf{阅读问题：}论文为什么用 $\sqrt{d_k}$？Q/K 参与匹配而 V 决定输出，如何在公式中体现？
+
+\textbf{完成证据：}用自己的 $(2,2)$ 数值例子解释一次 score、softmax 与 value 加权。
+
+\section{进入 Lab 前必须留下的证据}
+
+\begin{itemize}[leftmargin=8mm]
+\ChecklistItem{Q、K、V、scores、weights 与 output 的 shape 表。}
+\ChecklistItem{一个 $\text{scores}[i,j]$ 的行列解释和转置错误反例。}
+\ChecklistItem{对 $[1000,999,998]$ 的 stable softmax 预测与平移不变性推导。}
+\ChecklistItem{一个能区分 \Code{axis=-1} 与 \Code{axis=0} 的二维数组。}
+\ChecklistItem{只改变一行 V 时，对 scores、weights 与 output 的变化预测。}
+\end{itemize}
+
+缺少任一 P0 证据时，回到对应 Gate；不要用测试输出代替推导。
+
+\section{Lab 与提示协议}
+
+\begin{verbatim}
+uv run pytest labs/week-01/tests -v
+uv run python labs/week-01/run_grade.py
+\end{verbatim}
+
+\begin{enumerate}[label=第 \arabic* 次失败：]
+\item 阅读失败类别对应的思考问题，先写原因假设。
+\item 打印相关张量的 shape 和一行数值，用最小输入区分假设。
+\item 回到本周理论 Gate，不请求完整实现答案。
+\end{enumerate}
+
+grader 不存在时只能说明本地未配置验证器，不能据此判定通过或失败。
+
+\section{完成与提交清单}
+
+\begin{itemize}[leftmargin=8mm]
+\ChecklistItem{Gate 0--4 的概念、推导和反例证据完整。}
+\ChecklistItem{Lab 的公开与 hidden P0 检查通过。}
+\ChecklistItem{工程作业引用了自己的输入、断言、grader 类别或 demo 观察。}
+\ChecklistItem{记录并解释一个真实或主动注入的失败。}
+\ChecklistItem{能在 $3$--$5$ 分钟内闭卷解释输入、计算、输出、必要性和一种失败。}
+\ChecklistItem{attention inspector 调用公开接口，没有复制 Lab 内部实现。}
+\ChecklistItem{先预测后验证了“哪个 query 关注哪个 key”和“只改变一行 V”两个实验。}
+\end{itemize}
+
+全部完成后只解锁 causal mask 的位置问题；不会自动跳到 multi-head 或训练。
+
+\end{document}
