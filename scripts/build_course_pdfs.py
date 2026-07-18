@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 import shutil
 import subprocess
 import sys
@@ -14,6 +15,9 @@ def build() -> None:
     if tectonic is None:
         raise SystemExit("tectonic is required to build course PDFs")
 
+    build_env = os.environ.copy()
+    build_env["SOURCE_DATE_EPOCH"] = "946684800"
+
     for target in TARGETS:
         source = ROOT / target.source
         output = ROOT / target.output
@@ -22,6 +26,7 @@ def build() -> None:
         subprocess.run(
             [tectonic, "--outdir", str(output.parent), str(source)],
             cwd=ROOT,
+            env=build_env,
             check=True,
         )
         if not output.exists() or output.stat().st_size == 0:

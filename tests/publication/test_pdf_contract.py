@@ -35,3 +35,10 @@ def test_every_pdf_output_exists_and_is_not_empty() -> None:
         output = ROOT / target.output
         assert output.exists(), f"missing output: {target.output}"
         assert output.stat().st_size > 10_000, f"unexpectedly small: {target.output}"
+
+
+def test_pdf_builds_use_a_reproducible_timestamp() -> None:
+    build_script = (ROOT / "scripts/build_course_pdfs.py").read_text(
+        encoding="utf-8"
+    )
+    assert 'build_env["SOURCE_DATE_EPOCH"] = "946684800"' in build_script
