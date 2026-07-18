@@ -80,6 +80,24 @@ uv run learning-os resume
 
 因此当前状态机的“聊天外形”是模拟的，但状态授权和证据链不是模拟数据。以后 Agent 可以改变解释方式，却不能绕过学生独立作答、手动 commit 和证据验证。
 
+## 当前 Agent 接管里程碑
+
+现在的三层边界是：
+
+```text
+LearningRuntime = 确定性工具与状态权限
+Fake Agent      = CI 中证明 Agent 可以脱离 CLI 调用工具
+LLM Agent v0    = 下一里程碑：模型循环、tool schema、最小 Verifier
+```
+
+`tests/learning_runtime/test_agent_tool_seam.py` 会在真实的临时 Git 仓库中，让 Fake Agent 调用 `LearningRuntime.start_session()` 和 `submit_answer()`。学生填写与 commit 由测试中的学生模拟器完成；调用前后会核对 HEAD 与 Git status，证明 Runtime 没有替学生执行 Git 写操作。
+
+```bash
+uv run pytest tests/learning_runtime/test_agent_tool_seam.py -q
+```
+
+这个测试通过证明的是接口已经能被 Agent 接管，不代表 Fake Agent 具有教学智能，也不代表系统已经能判断开放回答的正确性。
+
 ## 下一子项目
 
-下一步接入公开测试与 grader adapter、逐 criterion Verifier、提示阶梯 Coach 和只提供建议的 Diagnostician。那一层负责判断答案与运行证据；现有工作区、Git 来源证明、Ledger、Policy Engine 和 State Machine 继续作为 Agent 的工具与权限底座。
+下一步直接构建 LLM Agent v0：将真实模型接到 `LearningRuntime` 的结构化工具，加入 tool-call 循环和最小 Verifier。公开测试与 grader adapter 随 Verifier 接入；提示阶梯 Coach 和 Diagnostician 后置。现有工作区、Git 来源证明、Ledger、Policy Engine 和 State Machine 继续作为 Agent 的工具与权限底座。
