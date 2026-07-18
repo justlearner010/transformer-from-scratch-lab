@@ -23,6 +23,7 @@ def test_coordinator_returns_one_bounded_action_without_private_content() -> Non
     assert action.current_capability == MANIFEST.capability_question
     assert action.current_gate == "week-01-gate-0"
     assert action.action
+    assert action.answer_path == "homework_answer/week-01/gate-00.md"
     assert action.checks == ("shape 是否闭合", "是否能解释 K.T")
     assert action.hint_level == 0
     assert action.evidence_index == ("evidence-0001",)

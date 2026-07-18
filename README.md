@@ -59,17 +59,25 @@ uv run python labs/week-01/run_grade.py
 
 ## Self-Learning Runtime Foundation
 
-Week 1 已提供一个本地、确定性的学习状态内核。它一次只给出一个主动任务，显式记录学生提交，并通过追加式事件账本恢复状态：
+Week 1 已提供一个本地、确定性的学习状态内核。学生先手动创建自己的分支；Runtime 只生成当前 Gate 的 Markdown 作答入口，不替学生切分支或提交：
 
 ```bash
+git switch -c learner/<你的名字>/week-01
 uv run learning-os start week-01
 uv run learning-os next
+```
+
+根据命令显示的“作答文件”完成回答，并把手写稿放进该 Gate 的附件目录。然后由学生本人提交：
+
+```bash
+git add homework_answer/week-01/
+git commit -m "answer: week 01 gate 0"
 uv run learning-os submit --gate week-01-gate-0
 uv run learning-os status
 uv run learning-os resume
 ```
 
-运行数据保存在被 Git 忽略的 `.learning-os/`。当前 Foundation **只记录尝试，不验证 Lab 证据，也不诊断失败**；因此 `submit` 只会进入 `evidence_pending`，不会自动判定通过或失败。Evidence Collector、Verifier、Coach 和 Diagnostician 属于下一子项目。
+`submit` 会拒绝空白、缺少必要附件或尚未 commit 的作答；通过后记录学生分支、commit SHA 和文件哈希。运行状态保存在被 Git 忽略的 `.learning-os/`。当前 Foundation **证明“提交了什么”，但还不判断“答得对不对”**，所以状态只会进入 `evidence_pending`。Verifier、Coach 和 Diagnostician 属于下一子项目。
 
 完整边界和恢复规则见 [Runtime Foundation 说明](docs/runtime-foundation.md)。
 

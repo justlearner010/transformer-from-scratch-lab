@@ -146,6 +146,7 @@ class ActionContract:
     current_gate: str
     reason: str
     action: str
+    answer_path: str
     checks: tuple[str, ...]
     hint_level: int
     evidence_index: tuple[str, ...] = field(default_factory=tuple)

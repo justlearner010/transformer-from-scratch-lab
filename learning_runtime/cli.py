@@ -12,6 +12,8 @@ from learning_runtime.storage.event_ledger import (
     LedgerCorruptionError,
 )
 from learning_runtime.storage.learner_state import replay_state
+from learning_runtime.workspace.answer_workspace import AnswerWorkspace
+from learning_runtime.workspace.git_guard import GitGuard
 
 
 DEFAULT_RUNTIME_DIR = Path(".learning-os")
@@ -71,6 +73,7 @@ def _render_action(action: ActionContract) -> None:
     print(f"当前 Gate：{action.current_gate}")
     print(f"为什么是这一步：{action.reason}")
     print(f"你现在需要完成的一个动作：{action.action}")
+    print(f"作答文件：{action.answer_path}")
     print(f"提交后会检查什么：{checks}")
     print(f"允许的提示等级：L{action.hint_level}")
     print(f"证据索引：{evidence}")
@@ -93,7 +96,11 @@ def _start(phase: str, runtime_dir: Path) -> int:
             file=sys.stderr,
         )
         return 2
+    branch = GitGuard(REPO_ROOT).assert_student_branch(
+        manifest.learner_workspace.protected_branches
+    )
     first_gate = manifest.gates[0]
+    answer = AnswerWorkspace(REPO_ROOT, manifest).initialize(first_gate)
     ledger.append(
         "session_started",
         {
@@ -102,6 +109,8 @@ def _start(phase: str, runtime_dir: Path) -> int:
             "current_gate": first_gate.gate_id,
             "unresolved_p0_nodes": list(first_gate.knowledge_node_ids),
             "manifest_path": "course-manifests/week-01.yaml",
+            "student_branch": branch,
+            "answer_path": answer.artifact_path.as_posix(),
         },
     )
     state = replay_state(ledger.read())
@@ -136,7 +145,50 @@ def _submit(runtime_dir: Path, gate_id: str) -> int:
             f"当前状态 {state.gate_status.value} 不允许再次提交。"
         )
 
-    ledger.append("attempt_submitted", {"gate_id": gate_id})
+    gate = manifest.gate(gate_id)
+    guard = GitGuard(REPO_ROOT)
+    guard.assert_student_branch(manifest.learner_workspace.protected_branches)
+    inspection = AnswerWorkspace(REPO_ROOT, manifest).inspect(gate)
+    evidence_paths = [
+        inspection.artifact_path,
+        *inspection.attachment_paths,
+    ]
+    snapshot = guard.snapshot_committed(evidence_paths)
+    existing_events = ledger.read()
+    observed_count = sum(
+        event.event_type == "artifact_observed" for event in existing_events
+    )
+    evidence_id = f"evidence-{observed_count + 1:04d}"
+    artifact_key = inspection.artifact_path.as_posix()
+    attachments = [
+        {
+            "path": path.as_posix(),
+            "content_hash": snapshot.content_hashes[path.as_posix()],
+        }
+        for path in inspection.attachment_paths
+    ]
+    evidence_refs = (evidence_id,)
+    ledger.append(
+        "artifact_observed",
+        {
+            "evidence_id": evidence_id,
+            "type": "committed-answer",
+            "source": artifact_key,
+            "observation": {
+                "gate_id": gate_id,
+                "branch": snapshot.branch,
+                "commit_sha": snapshot.commit_sha,
+                "content_hash": snapshot.content_hashes[artifact_key],
+                "attachments": attachments,
+            },
+        },
+        evidence_refs,
+    )
+    ledger.append(
+        "attempt_submitted",
+        {"gate_id": gate_id, "evidence_id": evidence_id},
+        evidence_refs,
+    )
     state_after_attempt = replay_state(ledger.read())
     transition = LearningStateMachine(manifest).transition(
         state_after_attempt, GateStatus.EVIDENCE_PENDING
@@ -144,9 +196,10 @@ def _submit(runtime_dir: Path, gate_id: str) -> int:
     ledger.append(
         transition.event_type,
         dict(transition.payload),
-        transition.evidence_refs,
+        evidence_refs,
     )
-    print(f"已记录 {gate_id} 的一次独立尝试。")
+    print(f"已记录 {gate_id} 的一次独立尝试：{evidence_id}。")
+    print(f"证据来源：{snapshot.branch}@{snapshot.commit_sha[:12]}")
     print("当前没有 Verifier，因此不会自动判定通过或失败。")
     _render_state(replay_state(ledger.read()))
     return 0

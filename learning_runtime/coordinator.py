@@ -30,6 +30,7 @@ class Coordinator:
             current_gate=gate.gate_id,
             reason=reason,
             action=gate.action,
+            answer_path=gate.submission.artifact_path,
             checks=gate.checks,
             hint_level=state.hint_level,
             evidence_index=state.verified_evidence_ids,
