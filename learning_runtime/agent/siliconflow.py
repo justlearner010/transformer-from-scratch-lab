@@ -36,6 +36,7 @@ class SiliconFlowPresenter:
             "action": request.action.action,
             "answer_path": request.action.answer_path,
             "checks": list(request.action.checks),
+            "required_sections": list(request.action.required_sections),
             "student_message": request.student_message,
             "decision": (
                 request.decision.recommendation.value

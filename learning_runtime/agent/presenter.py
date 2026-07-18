@@ -12,11 +12,13 @@ class DeterministicPresenter:
                 f"下一步：{request.decision.next_action}"
             )
         checks = "；".join(action.checks)
+        required = "、".join(action.required_sections) or "无"
         return (
             f"当前 Gate：{action.current_gate}\n"
             f"当前任务：{action.action}\n"
             f"作答文件：{action.answer_path}\n"
             f"提交检查：{checks}\n"
+            f"本 Gate 必填栏目：{required}\n"
             "完成并手动 commit 后输入 /submit。"
         )
 

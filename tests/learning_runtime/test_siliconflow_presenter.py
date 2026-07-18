@@ -1,4 +1,6 @@
 from types import SimpleNamespace
+from dataclasses import replace
+import json
 
 import pytest
 
@@ -46,12 +48,24 @@ def make_request():
 
 def test_presenter_sends_grounded_text_without_tools():
     client = RecordingClient("请完成当前 Gate，并在 commit 后输入 /submit。")
-    text = SiliconFlowPresenter(client, model="fixture").present(make_request())
+    presentation = make_request()
+    presentation = replace(
+        presentation,
+        action=replace(
+            presentation.action,
+            required_sections=("闭卷答案", "推导或机制解释", "提交自检"),
+        ),
+    )
+    text = SiliconFlowPresenter(client, model="fixture").present(presentation)
     kwargs = client.calls[0]
     assert text.startswith("请完成")
     assert "tools" not in kwargs
     assert kwargs["temperature"] == 0
     assert kwargs["extra_body"] == {"enable_thinking": False}
+    payload = json.loads(kwargs["messages"][1]["content"])
+    assert payload["required_sections"] == [
+        "闭卷答案", "推导或机制解释", "提交自检",
+    ]
 
 
 def test_presenter_rejects_empty_response():
