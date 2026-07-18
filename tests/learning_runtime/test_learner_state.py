@@ -68,7 +68,7 @@ def test_replay_restores_attempt_and_transition_state() -> None:
     assert state.last_event_id == "event-0003"
 
 
-def test_attempt_submission_never_infers_pass_or_failure() -> None:
+def test_attempt_submission_never_changes_gate_status_without_state_machine() -> None:
     state = replay_state(
         [
             event(
@@ -90,4 +90,4 @@ def test_attempt_submission_never_infers_pass_or_failure() -> None:
     )
 
     assert state.attempt_count == 1
-    assert state.gate_status is GateStatus.EVIDENCE_PENDING
+    assert state.gate_status is GateStatus.ACTIVE

@@ -27,7 +27,6 @@ def replay_state(events: Sequence[Event]) -> LearnerState:
                 )
             state = replace(
                 state,
-                gate_status=GateStatus.EVIDENCE_PENDING,
                 attempt_count=state.attempt_count + 1,
                 last_event_id=event.event_id,
             )
