@@ -61,7 +61,7 @@ class LearningRuntime:
             manifest.learner_workspace.protected_branches
         )
         first_gate = manifest.gates[0]
-        answer = AnswerWorkspace(self.repo_root, manifest).initialize(first_gate)
+        answer = AnswerWorkspace(self.repo_root, manifest).initialize_all()
         self.ledger.append(
             "session_started",
             {

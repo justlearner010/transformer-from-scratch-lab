@@ -66,7 +66,7 @@ git switch -c learner/<你的名字>/week-01
 uv run learning-os agent week-01
 ```
 
-根据 Agent 显示的作答文件完成回答并加入手写附件。学生仍必须本人提交 Git commit，然后回到 Agent 输入 `/submit`：
+首次启动时，Agent 会在 `homework_answer/week-01/` 一次性放好 Gate 0–6 的独立作答文件和附件目录。每个文件已写入该 Gate 的任务、检查点和需要填写的栏目；学生只填写当前 Gate 对应的 `.md`，附件按需加入同 Gate 的 `attachments/` 目录。学生仍必须本人提交本次作答的 Git commit，然后回到 Agent 输入 `/submit`：
 
 ```bash
 git add homework_answer/week-01/
@@ -77,9 +77,9 @@ git commit -m "answer: week 01 gate 0"
 
 ### Gate 0 作答格式
 
-启动 Agent 时和新生成的作答文件顶部都会显示当前 Gate 的格式。Gate 0 现在只必填：`闭卷答案`、`推导或机制解释`、`提交自检`。手写或其他附件完全可选；如果主动引用附件，文件必须位于本 Gate 的附件目录且已经 commit。模板里的其余栏目供后续 Gate 使用，Gate 0 可以留空。
+Gate 0 文件是 `homework_answer/week-01/gate-00.md`，只必填：`闭卷答案`、`推导或机制解释`、`提交自检`。手写或其他附件完全可选；如果主动引用附件，文件必须位于本 Gate 的附件目录且已经 commit。其他 Gate 各自拥有独立模板和各自的必填栏目，不需要从 Gate 0 模板中判断该写什么。
 
-对话 Qwen 只能生成显示文本；独立 Verifier 只能逐项返回 rubric 结果；`PolicyEngine` 和状态机拥有最终状态权。相同答案、附件、rubric 和 verifier 版本会复用第一次有效判定。对话记录不持久化，学习进度只从 `.learning-os/events.jsonl` 恢复。Gate 1–6 尚无 rubric，因此不会让模型自由判分。
+对话 Qwen 只能生成显示文本；系统按 manifest 预置填写模板；独立 Verifier 只能逐项返回 rubric 结果；`PolicyEngine` 和状态机拥有最终状态权。相同答案、附件、rubric 和 verifier 版本会复用第一次有效判定。对话记录不持久化，学习进度只从 `.learning-os/events.jsonl` 恢复。Gate 1–6 尚无 rubric，因此不会让模型自由判分。
 
 真实模型调用只从环境变量读取凭据：
 
