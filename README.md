@@ -77,7 +77,20 @@ uv run learning-os status
 uv run learning-os resume
 ```
 
-`submit` 会拒绝空白、缺少必要附件或尚未 commit 的作答；通过后记录学生分支、commit SHA 和文件哈希。运行状态保存在被 Git 忽略的 `.learning-os/`。当前 Foundation **证明“提交了什么”，但还不判断“答得对不对”**，所以状态只会进入 `evidence_pending`。Verifier、Coach 和 Diagnostician 属于下一子项目。
+`submit` 会拒绝空白、缺少必要附件或尚未 commit 的作答；通过后记录学生分支、commit SHA 和文件哈希。运行状态保存在被 Git 忽略的 `.learning-os/`。
+
+Gate 0 已有稳定 Agent Verifier：模型只能逐项返回 rubric 结果，`PolicyEngine` 决定是否通过，状态机执行合法跳转。相同答案、附件、rubric 和 verifier 版本会复用第一次有效判定，不会再次请求模型。当前 CLI 到 `submit` 为止；Agent 通过 `LearningRuntime.evaluate_current(verifier)` 接管判定。Gate 1–6 尚无 rubric，因此不会让模型自由判分。
+
+真实模型调用只从环境变量读取凭据：
+
+```bash
+cp .env.example .env
+# 在 .env 中填写新 key 后导入当前 shell；不要提交 .env
+set -a && source .env && set +a
+uv run pytest -m live tests/live/test_siliconflow_live.py -q
+```
+
+未设置 key 时 live test 会跳过；单元测试不需要网络或真实 key。
 
 完整边界和恢复规则见 [Runtime Foundation 说明](docs/runtime-foundation.md)。
 
