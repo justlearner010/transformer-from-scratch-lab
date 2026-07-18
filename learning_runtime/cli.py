@@ -99,6 +99,8 @@ def _render_action(action: ActionContract) -> None:
     print(f"你现在需要完成的一个动作：{action.action}")
     print(f"作答文件：{action.answer_path}")
     print(f"提交后会检查什么：{checks}")
+    required = "、".join(action.required_sections) or "无"
+    print(f"本 Gate 必填栏目：{required}")
     print(f"允许的提示等级：L{action.hint_level}")
     print(f"证据索引：{evidence}")
 

@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from learning_runtime.agent.models import PresentationKind, PresentationRequest
 from learning_runtime.agent.presenter import DeterministicPresenter, SafePresenter
 from learning_runtime.agent.protocol import PresenterError
@@ -37,3 +39,17 @@ def test_safe_presenter_falls_back_without_changing_request():
     )
     assert presentation.state.gate_status is GateStatus.ACTIVE
     assert presentation.action.action in text
+
+
+def test_deterministic_presenter_lists_required_sections():
+    presentation = request()
+    presentation = replace(
+        presentation,
+        action=replace(
+            presentation.action,
+            required_sections=("闭卷答案", "推导或机制解释", "提交自检"),
+        ),
+    )
+    text = DeterministicPresenter().present(presentation)
+    assert "本 Gate 必填栏目" in text
+    assert "闭卷答案、推导或机制解释、提交自检" in text

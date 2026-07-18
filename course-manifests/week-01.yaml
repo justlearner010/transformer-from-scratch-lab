@@ -91,8 +91,11 @@ gates:
     rubric_version: 1
     submission:
       artifact_path: homework_answer/week-01/gate-00.md
-      required_sections: *answer_sections
-      attachment_policy: at-least-one
+      required_sections:
+        - 闭卷答案
+        - 推导或机制解释
+        - 提交自检
+      attachment_policy: optional
 
   - gate_id: week-01-gate-1
     knowledge_node_ids: [qkv-score-semantics]

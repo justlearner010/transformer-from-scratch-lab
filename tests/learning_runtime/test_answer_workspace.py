@@ -35,6 +35,15 @@ def fill_answer(path: Path, *, attachment_link: str | None = None) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def replace_section(text: str, name: str, content: str) -> str:
+    return re.sub(
+        rf"(^## {re.escape(name)}\s*$\n)(.*?)(?=^## |\Z)",
+        rf"\1{content}\n\n",
+        text,
+        flags=re.MULTILINE | re.DOTALL,
+    )
+
+
 def test_initialize_creates_only_current_gate_and_never_overwrites(
     tmp_path: Path,
 ) -> None:
@@ -106,15 +115,26 @@ def test_inspect_rejects_blank_template_sections(tmp_path: Path) -> None:
         workspace.inspect(gate)
 
 
-def test_gate_zero_requires_at_least_one_attachment(tmp_path: Path) -> None:
+def test_gate_zero_accepts_required_sections_without_attachment(
+    tmp_path: Path,
+) -> None:
     repo = make_repo(tmp_path)
     workspace = AnswerWorkspace(repo, MANIFEST)
     gate = MANIFEST.gate("week-01-gate-0")
     location = workspace.initialize(gate)
-    fill_answer(repo / location.artifact_path)
+    path = repo / location.artifact_path
+    text = path.read_text(encoding="utf-8")
+    for name, content in (
+        ("闭卷答案", "shape chain"),
+        ("推导或机制解释", "K.T explanation"),
+        ("提交自检", "独立完成并手动提交"),
+    ):
+        text = replace_section(text, name, content)
+    path.write_text(text, encoding="utf-8")
 
-    with pytest.raises(AnswerWorkspaceError, match="attachment"):
-        workspace.inspect(gate)
+    inspection = workspace.inspect(gate)
+
+    assert inspection.attachment_paths == ()
 
 
 @pytest.mark.parametrize(

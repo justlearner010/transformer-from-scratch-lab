@@ -152,3 +152,4 @@ class ActionContract:
     checks: tuple[str, ...]
     hint_level: int
     evidence_index: tuple[str, ...] = field(default_factory=tuple)
+    required_sections: tuple[str, ...] = field(default_factory=tuple)

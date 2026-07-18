@@ -25,6 +25,11 @@ def test_coordinator_returns_one_bounded_action_without_private_content() -> Non
     assert action.action
     assert action.answer_path == "homework_answer/week-01/gate-00.md"
     assert action.checks == ("shape 是否闭合", "是否能解释 K.T")
+    assert action.required_sections == (
+        "闭卷答案",
+        "推导或机制解释",
+        "提交自检",
+    )
     assert action.hint_level == 0
     assert action.evidence_index == ("evidence-0001",)
     rendered = repr(action).lower()
