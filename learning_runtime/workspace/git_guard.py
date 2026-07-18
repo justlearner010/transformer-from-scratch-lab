@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
+import re
 import subprocess
 from typing import Mapping, Sequence
 
@@ -58,6 +59,12 @@ class GitGuard:
             committed_bytes = self._bytes("show", f"HEAD:{relative_path}")
             hashes[relative_path] = "sha256:" + sha256(committed_bytes).hexdigest()
         return GitSnapshot(branch, commit_sha, hashes)
+
+    def read_committed(self, commit_sha: str, path: Path) -> bytes:
+        if re.fullmatch(r"[0-9a-f]{40}", commit_sha) is None:
+            raise GitEvidenceError("invalid committed evidence SHA")
+        relative_path = self._relative(path)
+        return self._bytes("show", f"{commit_sha}:{relative_path}")
 
     def _relative(self, path: Path) -> str:
         candidate = (self.repo_root / path).resolve()
