@@ -69,7 +69,8 @@ uv run learning-os agent week-01
 首次启动时，Agent 会在 `homework_answer/week-01/` 一次性放好 Gate 0–6 的独立作答文件和附件目录。每个文件已写入该 Gate 的任务、检查点和需要填写的栏目；学生只填写当前 Gate 对应的 `.md`，附件按需加入同 Gate 的 `attachments/` 目录。学生仍必须本人提交本次作答的 Git commit，然后回到 Agent 输入 `/submit`：
 
 ```bash
-git add homework_answer/week-01/
+git add homework_answer/week-01/gate-00.md
+# 若本次使用附件，再单独 git add 对应文件
 git commit -m "answer: week 01 gate 0"
 ```
 
