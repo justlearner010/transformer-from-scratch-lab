@@ -66,6 +66,18 @@ def test_initialize_creates_only_current_gate_and_never_overwrites(
     assert first_path.read_text(encoding="utf-8").endswith("学生自己的内容\n")
 
 
+def test_initialize_shows_gate_specific_format_before_answer(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    workspace = AnswerWorkspace(repo, MANIFEST)
+    location = workspace.initialize(MANIFEST.gate("week-01-gate-0"))
+
+    text = (repo / location.artifact_path).read_text(encoding="utf-8")
+
+    assert "本 Gate 提交格式" in text
+    assert "闭卷答案、推导或机制解释、提交自检" in text
+    assert "附件：可选" in text
+
+
 def test_inspect_accepts_filled_answer_and_linked_gate_attachment(
     tmp_path: Path,
 ) -> None:

@@ -56,6 +56,18 @@ class AnswerWorkspace:
                 .replace("{{gate_id}}", gate.gate_id)
                 .replace("{{gate_number}}", gate_number)
             )
+            required = "、".join(gate.submission.required_sections)
+            attachment = (
+                "至少一个附件"
+                if gate.submission.attachment_policy == "at-least-one"
+                else "可选"
+            )
+            format_notice = (
+                "> **本 Gate 提交格式**\n>\n"
+                f"> 必填栏目：{required}\n>\n"
+                f"> 附件：{attachment}\n\n"
+            )
+            rendered = rendered.replace("\n# Gate", f"\n{format_notice}# Gate", 1)
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(rendered, encoding="utf-8")
         return AnswerLocation(artifact_relative, attachment_relative, created)
