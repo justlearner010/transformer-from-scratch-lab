@@ -40,7 +40,6 @@ class EvidenceRequirement:
 class LearnerWorkspace:
     answer_root: str
     template_ref: str
-    protected_branches: tuple[str, ...]
     commit_required: bool
 
 

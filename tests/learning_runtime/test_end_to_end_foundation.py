@@ -3,6 +3,7 @@ import re
 import subprocess
 
 from learning_runtime.cli import main
+from learning_runtime.runtime import LearningRuntime
 from learning_runtime.schemas import GateStatus
 from learning_runtime.storage.event_ledger import EventLedger
 from learning_runtime.storage.learner_state import replay_state
@@ -41,22 +42,22 @@ def fill_gate_zero(repo: Path) -> tuple[Path, Path]:
     return answer, attachment
 
 
-def test_start_rejects_protected_branch_without_creating_state_or_answer(
+def test_start_allows_a_student_to_work_on_main_without_creating_a_branch(
     student_repo: Path, capsys
 ) -> None:
     runtime_dir = student_repo / ".learning-os"
 
-    assert main(["start", "week-01", "--runtime-dir", str(runtime_dir)]) == 2
+    assert main(["start", "week-01", "--runtime-dir", str(runtime_dir)]) == 0
 
-    assert not (runtime_dir / "events.jsonl").exists()
-    assert not (student_repo / "homework_answer/week-01/gate-00.md").exists()
-    assert "main" in capsys.readouterr().err
+    assert (runtime_dir / "events.jsonl").exists()
+    assert (student_repo / "homework_answer/week-01/gate-00.md").exists()
+    assert (student_repo / "homework_answer/week-01/gate-06.md").exists()
+    assert "当前 Gate：week-01-gate-0" in capsys.readouterr().out
 
 
 def test_committed_student_answer_becomes_observed_evidence(
     student_repo: Path, capsys
 ) -> None:
-    git(student_repo, "switch", "-c", "learner/test/week-01")
     runtime_dir = student_repo / ".learning-os"
     runtime_args = ["--runtime-dir", str(runtime_dir)]
 
@@ -112,7 +113,7 @@ def test_committed_student_answer_becomes_observed_evidence(
     ]
     observed = events[1]
     assert observed.payload["evidence_id"] == "evidence-0001"
-    assert observed.payload["observation"]["branch"] == "learner/test/week-01"
+    assert observed.payload["observation"]["branch"] == "main"
     assert observed.payload["observation"]["commit_sha"] == git(
         student_repo, "rev-parse", "HEAD"
     )
@@ -137,14 +138,13 @@ def test_committed_student_answer_becomes_observed_evidence(
         "已记录 week-01-gate-0 的一次独立尝试：evidence-0001"
         in output
     )
-    assert "证据来源：learner/test/week-01@" in output
+    assert "证据来源：main@" in output
     assert "不会自动判定通过或失败" in output
 
 
 def test_start_refuses_to_overwrite_an_existing_session(
     student_repo: Path, capsys
 ) -> None:
-    git(student_repo, "switch", "-c", "learner/test/week-01")
     runtime_dir = student_repo / ".learning-os"
     arguments = [
         "start",
@@ -158,3 +158,17 @@ def test_start_refuses_to_overwrite_an_existing_session(
 
     assert len(EventLedger(runtime_dir / "events.jsonl").read()) == 1
     assert "已经存在" in capsys.readouterr().err
+
+
+def test_open_session_backfills_missing_gate_templates(
+    student_repo: Path,
+) -> None:
+    runtime_dir = student_repo / ".learning-os"
+    runtime = LearningRuntime(student_repo, runtime_dir)
+    runtime.start_session("week-01")
+    missing = student_repo / "homework_answer/week-01/gate-06.md"
+    missing.unlink()
+
+    runtime.open_session("week-01")
+
+    assert missing.is_file()

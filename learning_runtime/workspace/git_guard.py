@@ -21,14 +21,10 @@ class GitGuard:
     def __init__(self, repo_root: Path) -> None:
         self.repo_root = repo_root.resolve()
 
-    def assert_student_branch(self, protected_branches: tuple[str, ...]) -> str:
+    def assert_attached_branch(self) -> str:
         branch = self._text("branch", "--show-current")
         if not branch:
             raise GitEvidenceError("detached HEAD cannot own student answers")
-        if branch in protected_branches:
-            raise GitEvidenceError(
-                f"protected branch {branch!r} cannot own student answers"
-            )
         return branch
 
     def snapshot_committed(self, paths: Sequence[Path]) -> GitSnapshot:

@@ -59,10 +59,9 @@ uv run python labs/week-01/run_grade.py
 
 ## Self-Learning Agent MVP
 
-Week 1 已提供持续运行的终端学习 Agent。学生先手动创建自己的分支，然后只需一个入口；没有 session 时自动创建，已有 session 时从 Event Ledger 恢复：
+Week 1 已提供持续运行的终端学习 Agent。学生无需创建或切换分支，只需在自己的课程副本中运行；没有 session 时自动创建，已有 session 时从 Event Ledger 恢复并补齐缺失模板：
 
 ```bash
-git switch -c learner/<你的名字>/week-01
 uv run learning-os agent week-01
 ```
 
@@ -74,7 +73,7 @@ git add homework_answer/week-01/gate-00.md
 git commit -m "answer: week 01 gate 0"
 ```
 
-可用命令：`/submit`、`/retry`、`/status`、`/next`、`/help`、`/quit`。普通文字只用于解释当前任务，永远不会触发提交或状态变化。Agent 不创建分支、不写答案、不 commit、不 push。
+可用命令：`/submit`、`/retry`、`/status`、`/next`、`/help`、`/quit`。普通文字只用于解释当前任务，永远不会触发提交或状态变化。Agent 不写答案、不 commit、不 push；它只要求当前作答已被学生手动 commit。
 
 ### Gate 0 作答格式
 

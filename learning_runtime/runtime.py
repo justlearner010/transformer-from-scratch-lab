@@ -57,9 +57,7 @@ class LearningRuntime:
             raise ValueError(
                 f"学习 session 已经存在：{self.ledger.path}；请使用 resume。"
             )
-        branch = GitGuard(self.repo_root).assert_student_branch(
-            manifest.learner_workspace.protected_branches
-        )
+        branch = GitGuard(self.repo_root).assert_attached_branch()
         first_gate = manifest.gates[0]
         answer = AnswerWorkspace(self.repo_root, manifest).initialize_all()
         self.ledger.append(
@@ -78,9 +76,6 @@ class LearningRuntime:
 
     def open_session(self, phase: str) -> ActionContract:
         manifest = self._manifest(phase)
-        GitGuard(self.repo_root).assert_student_branch(
-            manifest.learner_workspace.protected_branches
-        )
         if not self.ledger.path.exists():
             return self.start_session(phase)
         state = self.get_state()
@@ -88,6 +83,7 @@ class LearningRuntime:
             raise ValueError(
                 f"existing session phase {state.phase_id} does not match {phase}"
             )
+        AnswerWorkspace(self.repo_root, manifest).initialize_all()
         return Coordinator(manifest).next_action(state)
 
     def next_action(self) -> ActionContract:
@@ -108,7 +104,7 @@ class LearningRuntime:
 
         gate = manifest.gate(gate_id)
         guard = GitGuard(self.repo_root)
-        guard.assert_student_branch(manifest.learner_workspace.protected_branches)
+        guard.assert_attached_branch()
         inspection = AnswerWorkspace(self.repo_root, manifest).inspect(gate)
         snapshot = guard.snapshot_committed(
             [inspection.artifact_path, *inspection.attachment_paths]

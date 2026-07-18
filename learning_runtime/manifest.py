@@ -110,13 +110,6 @@ def load_manifest(path: Path, repo_root: Path) -> CourseManifest:
     learner_workspace = LearnerWorkspace(
         answer_root=answer_root,
         template_ref=template_ref,
-        protected_branches=tuple(
-            str(item)
-            for item in _require_list(
-                workspace_raw.get("protected_branches"),
-                "learner_workspace.protected_branches",
-            )
-        ),
         commit_required=bool(workspace_raw.get("commit_required", False)),
     )
 

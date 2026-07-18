@@ -29,15 +29,14 @@ def make_repo(tmp_path: Path) -> Path:
     return repo
 
 
-def test_protected_branch_is_rejected_without_changing_git_state(
+def test_attached_main_branch_can_own_student_answers_without_changing_git_state(
     tmp_path: Path,
 ) -> None:
     repo = make_repo(tmp_path)
     guard = GitGuard(repo)
     before = git(repo, "status", "--porcelain")
 
-    with pytest.raises(GitEvidenceError, match="main"):
-        guard.assert_student_branch(("main", "master"))
+    assert guard.assert_attached_branch() == "main"
 
     assert git(repo, "status", "--porcelain") == before
 
