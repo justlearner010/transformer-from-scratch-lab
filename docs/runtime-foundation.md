@@ -32,19 +32,17 @@ LearnerState                    从 Ledger 重放得到的缓存视图
 ```bash
 uv sync --group dev
 git switch -c learner/<你的名字>/week-01
-uv run learning-os start week-01
-uv run learning-os next
+uv run learning-os agent week-01
 ```
 
-完成命令显示的作答文件后，由学生本人执行：
+Agent 自动新建或恢复 session。完成它显示的作答文件后，由学生本人执行：
 
 ```bash
 git add homework_answer/week-01/
 git commit -m "answer: week 01 gate 0"
-uv run learning-os submit --gate week-01-gate-0
-uv run learning-os status
-uv run learning-os resume
 ```
+
+回到持续对话输入 `/submit`。其他命令为 `/retry`、`/status`、`/next`、`/help` 和 `/quit`。原有 `start`、`next`、`submit`、`status`、`resume` CLI 继续作为维护接口。
 
 `start` 会先验证 manifest 和当前 Git 分支。`main`、`master` 或 detached HEAD 会被拒绝；Runtime 不会替学生创建或切换分支。检查通过后，它只初始化当前 Gate 的作答文件，再创建事件账本。如果 session 已存在，它会拒绝覆盖并要求使用 `resume`。
 
@@ -75,7 +73,8 @@ uv run learning-os resume
 | GitGuard | 保留，作为已提交证据的来源证明工具 |
 | EventLedger 与状态重放 | 保留，作为可恢复、可审计记忆 |
 | Policy 与 State Machine | 保留，限制 Agent 能否推进或回退 |
-| CLI 参数解析与固定打印文本 | 替换为 Agent 对话和 tool calls |
+| 确定性 slash-command Router | 保留，显式控制 Agent 能调用的动作 |
+| Conversation Presenter | 保留为可替换显示层；其文本不进入状态 |
 | 当前 Coordinator 文案投影 | 简化或替换；不把它当智能本体 |
 
 因此当前状态机的“聊天外形”是模拟的，但状态授权和证据链不是模拟数据。以后 Agent 可以改变解释方式，却不能绕过学生独立作答、手动 commit 和证据验证。
@@ -117,6 +116,12 @@ SILICONFLOW_MODEL         可选，默认 Qwen/Qwen3.6-35B-A3B
 
 `.env` 已被 Git 忽略，`.env.example` 只包含空占位符和非敏感默认值。网络错误、无效 JSON 或 schema 校验失败均不能推进状态。
 
+## 终端 Agent 权限
+
+对话 Presenter 与 Verifier 使用独立调用路径。Presenter 没有 tools，只接收当前 `ActionContract`、公开检查标准、学生最后一条消息和可信判定摘要。它的输出只显示，不写 Ledger，也不会被重新解析成命令。
+
+普通文字不能触发动作。只有本地精确匹配的 `/submit` 才会记录已 commit 证据并调用 Verifier；只有 `evidence_pending` 可以 `/retry`。Presenter 失败时使用确定性模板，Verifier 失败时保留待判定状态。
+
 ## 可验证的 Agent 边界
 
 `tests/learning_runtime/test_agent_tool_seam.py` 会在真实的临时 Git 仓库中，让 Fake Agent 调用 `LearningRuntime.start_session()` 和 `submit_answer()`。学生填写与 commit 由测试中的学生模拟器完成；调用前后会核对 HEAD 与 Git status，证明 Runtime 没有替学生执行 Git 写操作。
@@ -125,11 +130,13 @@ SILICONFLOW_MODEL         可选，默认 Qwen/Qwen3.6-35B-A3B
 uv run pytest tests/learning_runtime/test_agent_tool_seam.py -q
 uv run pytest tests/learning_runtime/test_stable_verifier.py -q
 uv run pytest tests/learning_runtime/test_agent_state_authority.py -q
+uv run pytest tests/learning_runtime/test_agent_session.py -q
 uv run pytest -m live tests/live/test_siliconflow_live.py -q
+uv run pytest -m live tests/live/test_siliconflow_agent_live.py -q
 ```
 
 最后一个 live test 只在本地设置 `SILICONFLOW_API_KEY` 时发起真实请求；未设置时自动跳过。其余测试使用固定响应，不消耗 API 配额。
 
 ## 下一子项目
 
-下一步构建对话式 Agent loop 和 tool schema，让 Agent 负责解释当前任务、触发提交与调用 Verifier；随后为 Gate 1–6 逐步增加 rubric、公开测试和 grader adapter。提示阶梯 Coach 与 Diagnostician 后置。现有工作区、Git 来源证明、稳定判定注册表、Ledger、Policy Engine 和 State Machine 继续作为权限底座。
+下一步优先构建提交后的 Diagnostician：它只消费可信 criterion failure 和 evidence refs，生成分层反馈，仍不拥有状态权。随后为 Gate 1–6 逐步增加 rubric、公开测试和 grader adapter；提交前 Coach、多 Agent 和 Web UI 继续后置。

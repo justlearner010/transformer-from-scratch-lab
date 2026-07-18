@@ -57,29 +57,25 @@ uv run python labs/week-01/run_grade.py
 
 `pytest` 只运行公开 smoke tests；`run_grade.py` 在本地存在 `.grader/` 时才执行隐藏评分。
 
-## Self-Learning Runtime Foundation
+## Self-Learning Agent MVP
 
-Week 1 已提供一个本地、确定性的学习状态内核。学生先手动创建自己的分支；Runtime 只生成当前 Gate 的 Markdown 作答入口，不替学生切分支或提交：
+Week 1 已提供持续运行的终端学习 Agent。学生先手动创建自己的分支，然后只需一个入口；没有 session 时自动创建，已有 session 时从 Event Ledger 恢复：
 
 ```bash
 git switch -c learner/<你的名字>/week-01
-uv run learning-os start week-01
-uv run learning-os next
+uv run learning-os agent week-01
 ```
 
-根据命令显示的“作答文件”完成回答，并把手写稿放进该 Gate 的附件目录。然后由学生本人提交：
+根据 Agent 显示的作答文件完成回答并加入手写附件。学生仍必须本人提交 Git commit，然后回到 Agent 输入 `/submit`：
 
 ```bash
 git add homework_answer/week-01/
 git commit -m "answer: week 01 gate 0"
-uv run learning-os submit --gate week-01-gate-0
-uv run learning-os status
-uv run learning-os resume
 ```
 
-`submit` 会拒绝空白、缺少必要附件或尚未 commit 的作答；通过后记录学生分支、commit SHA 和文件哈希。运行状态保存在被 Git 忽略的 `.learning-os/`。
+可用命令：`/submit`、`/retry`、`/status`、`/next`、`/help`、`/quit`。普通文字只用于解释当前任务，永远不会触发提交或状态变化。Agent 不创建分支、不写答案、不 commit、不 push。
 
-Gate 0 已有稳定 Agent Verifier：模型只能逐项返回 rubric 结果，`PolicyEngine` 决定是否通过，状态机执行合法跳转。相同答案、附件、rubric 和 verifier 版本会复用第一次有效判定，不会再次请求模型。当前 CLI 到 `submit` 为止；Agent 通过 `LearningRuntime.evaluate_current(verifier)` 接管判定。Gate 1–6 尚无 rubric，因此不会让模型自由判分。
+对话 Qwen 只能生成显示文本；独立 Verifier 只能逐项返回 rubric 结果；`PolicyEngine` 和状态机拥有最终状态权。相同答案、附件、rubric 和 verifier 版本会复用第一次有效判定。对话记录不持久化，学习进度只从 `.learning-os/events.jsonl` 恢复。Gate 1–6 尚无 rubric，因此不会让模型自由判分。
 
 真实模型调用只从环境变量读取凭据：
 
@@ -88,6 +84,7 @@ cp .env.example .env
 # 在 .env 中填写新 key 后导入当前 shell；不要提交 .env
 set -a && source .env && set +a
 uv run pytest -m live tests/live/test_siliconflow_live.py -q
+uv run pytest -m live tests/live/test_siliconflow_agent_live.py -q
 ```
 
 未设置 key 时 live test 会跳过；单元测试不需要网络或真实 key。

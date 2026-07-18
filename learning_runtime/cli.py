@@ -3,10 +3,18 @@ from collections.abc import Sequence
 from pathlib import Path
 import sys
 
+from learning_runtime.agent.presenter import DeterministicPresenter, SafePresenter
+from learning_runtime.agent.protocol import PresenterError
+from learning_runtime.agent.session import AgentSession
+from learning_runtime.agent.siliconflow import SiliconFlowPresenter
 from learning_runtime.manifest import ManifestError
 from learning_runtime.runtime import LearningRuntime, SubmissionReceipt
 from learning_runtime.schemas import ActionContract, LearnerState
 from learning_runtime.storage.event_ledger import LedgerCorruptionError
+from learning_runtime.verification.siliconflow import (
+    SiliconFlowConfigError,
+    SiliconFlowVerifier,
+)
 
 
 DEFAULT_RUNTIME_DIR = Path(".learning-os")
@@ -42,7 +50,44 @@ def build_parser() -> argparse.ArgumentParser:
 
     resume = commands.add_parser("resume", help="从事件账本恢复状态")
     _add_runtime_dir(resume)
+
+    agent = commands.add_parser("agent", help="启动稳定学习 Agent")
+    agent.add_argument("phase")
+    _add_runtime_dir(agent)
     return parser
+
+
+def build_agent_session(runtime: LearningRuntime) -> AgentSession:
+    fallback = DeterministicPresenter()
+    try:
+        presenter = SafePresenter(SiliconFlowPresenter.from_env(), fallback)
+    except PresenterError:
+        presenter = fallback
+    try:
+        verifier = SiliconFlowVerifier.from_env()
+    except SiliconFlowConfigError:
+        verifier = None
+    return AgentSession(runtime, presenter, verifier)
+
+
+def run_agent_loop(
+    session: AgentSession,
+    phase: str,
+    input_fn=input,
+    output_fn=print,
+) -> int:
+    output_fn(session.open(phase).text)
+    while True:
+        try:
+            raw = input_fn("learning-os> ")
+        except (EOFError, KeyboardInterrupt):
+            output_fn("\n学习进度已保存在事件账本中。")
+            return 0
+        turn = session.handle(raw)
+        if turn.text:
+            output_fn(turn.text)
+        if turn.should_exit:
+            return 0
 
 
 def _render_action(action: ActionContract) -> None:
@@ -80,6 +125,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     runtime = LearningRuntime(REPO_ROOT, args.runtime_dir)
     try:
+        if args.command == "agent":
+            return run_agent_loop(build_agent_session(runtime), args.phase)
         if args.command == "start":
             _render_action(runtime.start_session(args.phase))
             return 0
