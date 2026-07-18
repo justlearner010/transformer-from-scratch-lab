@@ -2,6 +2,21 @@ course_id: transformer-from-scratch
 phase_id: week-01
 capability_question: 一个 token 如何依据内容选择性读取其他 token？
 
+learner_workspace:
+  answer_root: homework_answer
+  template_ref: resources/week-01/answer-template.md
+  protected_branches: [main, master]
+  commit_required: true
+  required_sections: &answer_sections
+    - 闭卷答案
+    - 运行前预测
+    - 推导或机制解释
+    - 验证过程与结果
+    - 预测和结果的差异
+    - 真实错误或当前未知项
+    - 手写与其他附件
+    - 提交自检
+
 knowledge_nodes:
   - node_id: matrix-shape
     type: mechanism-contract
@@ -72,6 +87,10 @@ gates:
     pass_rule: all-required
     rollback_target: week-00-review
     escalation_conditions: [前置证据冲突, Week 0 产物不可访问]
+    submission:
+      artifact_path: homework_answer/week-01/gate-00.md
+      required_sections: *answer_sections
+      attachment_policy: at-least-one
 
   - gate_id: week-01-gate-1
     knowledge_node_ids: [qkv-score-semantics]
@@ -88,6 +107,10 @@ gates:
     pass_rule: all-required
     rollback_target: week-01-gate-0
     escalation_conditions: [解释与 shape 证据冲突]
+    submission:
+      artifact_path: homework_answer/week-01/gate-01.md
+      required_sections: *answer_sections
+      attachment_policy: optional
 
   - gate_id: week-01-gate-2
     knowledge_node_ids: [qkv-score-semantics]
@@ -104,6 +127,10 @@ gates:
     pass_rule: all-required
     rollback_target: week-01-gate-1
     escalation_conditions: [转置反例无法区分假设]
+    submission:
+      artifact_path: homework_answer/week-01/gate-02.md
+      required_sections: *answer_sections
+      attachment_policy: optional
 
   - gate_id: week-01-gate-3
     knowledge_node_ids: [stable-softmax]
@@ -125,6 +152,10 @@ gates:
     pass_rule: all-required
     rollback_target: week-01-gate-2
     escalation_conditions: [数值结果与解释冲突, verifier 不可用]
+    submission:
+      artifact_path: homework_answer/week-01/gate-03.md
+      required_sections: *answer_sections
+      attachment_policy: optional
 
   - gate_id: week-01-gate-4
     knowledge_node_ids: [value-read]
@@ -141,6 +172,10 @@ gates:
     pass_rule: all-required
     rollback_target: week-01-gate-3
     escalation_conditions: [预测与实验使用不同输入]
+    submission:
+      artifact_path: homework_answer/week-01/gate-04.md
+      required_sections: *answer_sections
+      attachment_policy: optional
 
   - gate_id: week-01-gate-5
     knowledge_node_ids: [single-head-attention]
@@ -162,6 +197,10 @@ gates:
     pass_rule: all-required
     rollback_target: week-01-gate-4
     escalation_conditions: [grader 不可用, 命令异常退出]
+    submission:
+      artifact_path: homework_answer/week-01/gate-05.md
+      required_sections: *answer_sections
+      attachment_policy: optional
 
   - gate_id: week-01-gate-6
     knowledge_node_ids: [failure-diagnosis, attention-inspector]
@@ -183,6 +222,10 @@ gates:
     pass_rule: all-required-and-separate-submission
     rollback_target: week-01-gate-5
     escalation_conditions: [迁移产物复制 Lab, 证据版本冲突]
+    submission:
+      artifact_path: homework_answer/week-01/gate-06.md
+      required_sections: *answer_sections
+      attachment_policy: optional
 
 completion_rule: Gate 0-6 的 P0 criterion 均有独立证据，且迁移证据来自单独提交。
 next_capability: causal-mask

@@ -7,6 +7,8 @@ from learning_runtime.schemas import (
     CourseManifest,
     EvidenceRequirement,
     GateDefinition,
+    LearnerWorkspace,
+    SubmissionDefinition,
 )
 
 
@@ -27,6 +29,7 @@ REQUIRED_FIELDS = {
     "failure_routes",
     "completion_rule",
     "next_capability",
+    "learner_workspace",
 }
 
 
@@ -50,6 +53,15 @@ def _validate_path(repo_root: Path, relative_path: str) -> None:
         raise ManifestError(f"path escapes repository: {relative_path}") from error
     if not candidate.exists():
         raise ManifestError(f"artifact path does not exist: {relative_path}")
+
+
+def _validate_output_path(answer_root: str, relative_path: str) -> None:
+    root = Path(answer_root)
+    candidate = Path(relative_path)
+    if candidate.is_absolute() or not candidate.is_relative_to(root):
+        raise ManifestError(
+            f"answer artifact must stay under {answer_root}: {relative_path}"
+        )
 
 
 def _validate_dependencies(
@@ -91,6 +103,23 @@ def load_manifest(path: Path, repo_root: Path) -> CourseManifest:
     if missing:
         raise ManifestError(f"missing manifest fields: {', '.join(missing)}")
 
+    workspace_raw = _require_mapping(root["learner_workspace"], "learner_workspace")
+    answer_root = str(workspace_raw.get("answer_root", ""))
+    template_ref = str(workspace_raw.get("template_ref", ""))
+    _validate_path(repo_root, template_ref)
+    learner_workspace = LearnerWorkspace(
+        answer_root=answer_root,
+        template_ref=template_ref,
+        protected_branches=tuple(
+            str(item)
+            for item in _require_list(
+                workspace_raw.get("protected_branches"),
+                "learner_workspace.protected_branches",
+            )
+        ),
+        commit_required=bool(workspace_raw.get("commit_required", False)),
+    )
+
     artifact_refs_raw = _require_mapping(root["artifact_refs"], "artifact_refs")
     artifact_refs: dict[str, str] = {}
     for name, relative_path in artifact_refs_raw.items():
@@ -116,6 +145,7 @@ def load_manifest(path: Path, repo_root: Path) -> CourseManifest:
     gate_rows = _require_list(root["gates"], "gates")
     gates: list[GateDefinition] = []
     seen_gate_ids: set[str] = set()
+    seen_artifact_paths: set[str] = set()
     for row_value in gate_rows:
         row = _require_mapping(row_value, "gate")
         gate_id = str(row.get("gate_id", ""))
@@ -149,6 +179,31 @@ def load_manifest(path: Path, repo_root: Path) -> CourseManifest:
                 )
             )
 
+        submission_raw = _require_mapping(
+            row.get("submission"), f"{gate_id}.submission"
+        )
+        artifact_path = str(submission_raw.get("artifact_path", ""))
+        _validate_output_path(answer_root, artifact_path)
+        if artifact_path in seen_artifact_paths:
+            raise ManifestError(f"duplicate answer artifact path: {artifact_path}")
+        seen_artifact_paths.add(artifact_path)
+        attachment_policy = str(submission_raw.get("attachment_policy", ""))
+        if attachment_policy not in {"optional", "at-least-one"}:
+            raise ManifestError(f"unsupported attachment policy: {attachment_policy}")
+        submission = SubmissionDefinition(
+            artifact_path=artifact_path,
+            required_sections=tuple(
+                str(item)
+                for item in _require_list(
+                    submission_raw.get("required_sections"),
+                    f"{gate_id}.submission.required_sections",
+                )
+            ),
+            attachment_policy=attachment_policy,
+        )
+        if not submission.required_sections:
+            raise ManifestError(f"{gate_id} requires at least one answer section")
+
         gates.append(
             GateDefinition(
                 gate_id=gate_id,
@@ -170,6 +225,7 @@ def load_manifest(path: Path, repo_root: Path) -> CourseManifest:
                     str(item)
                     for item in _require_list(row.get("checks"), f"{gate_id}.checks")
                 ),
+                submission=submission,
             )
         )
 
@@ -206,4 +262,5 @@ def load_manifest(path: Path, repo_root: Path) -> CourseManifest:
         failure_routes=failure_routes,
         completion_rule=str(root["completion_rule"]),
         next_capability=str(root["next_capability"]),
+        learner_workspace=learner_workspace,
     )

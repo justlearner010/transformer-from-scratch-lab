@@ -37,6 +37,21 @@ class EvidenceRequirement:
 
 
 @dataclass(frozen=True)
+class LearnerWorkspace:
+    answer_root: str
+    template_ref: str
+    protected_branches: tuple[str, ...]
+    commit_required: bool
+
+
+@dataclass(frozen=True)
+class SubmissionDefinition:
+    artifact_path: str
+    required_sections: tuple[str, ...]
+    attachment_policy: str
+
+
+@dataclass(frozen=True)
 class GateDefinition:
     gate_id: str
     knowledge_node_ids: tuple[str, ...]
@@ -48,6 +63,7 @@ class GateDefinition:
     escalation_conditions: tuple[str, ...]
     action: str
     checks: tuple[str, ...]
+    submission: SubmissionDefinition
 
 
 @dataclass(frozen=True)
@@ -64,6 +80,7 @@ class CourseManifest:
     failure_routes: Mapping[str, str]
     completion_rule: str
     next_capability: str
+    learner_workspace: LearnerWorkspace
 
     def gate(self, gate_id: str) -> GateDefinition:
         for gate in self.gates:
