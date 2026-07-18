@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Theory-first, autograded Transformer learning lab."
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = ["numpy>=2.2.0", "pyyaml>=6.0"]
+dependencies = ["numpy>=2.2.0", "openai>=1.0", "pyyaml>=6.0"]
 
 [project.scripts]
 learning-os = "learning_runtime.cli:main"
@@ -25,3 +25,4 @@ include = ["learning_runtime*"]
 [tool.pytest.ini_options]
 testpaths = ["labs", "tests"]
 pythonpath = ["."]
+markers = ["live: requires an external provider credential and network"]
