@@ -12,7 +12,7 @@
 | --- | --- | --- | --- | --- |
 | shape 闭合 | mechanism-contract | D2 | P0 | 闭卷答案 |
 | `K.T` 机制解释 | mechanism | D2 | P0 | 推导或机制解释 |
-| 独立完成来源 | evidence contract | D2 | P1 | 手写附件与提交自检 |
+| 独立完成来源 | evidence contract | D2 | P1 | 学生手动 commit 与提交自检 |
 
 Gate 0 不验证实验操作、预测差异或故障诊断，因此不得强制收集这些栏目。
 
@@ -24,10 +24,9 @@ Gate 0 必填且仅必填：
 
 1. `闭卷答案`
 2. `推导或机制解释`
-3. `手写与其他附件`
-4. `提交自检`
+3. `提交自检`
 
-`运行前预测`、`验证过程与结果`、`预测和结果的差异`、`真实错误或当前未知项` 可保留在通用模板中，但 Gate 0 留空不会阻止提交。Gate 0 的 `at-least-one` 附件规则保持不变。
+`运行前预测`、`验证过程与结果`、`预测和结果的差异`、`真实错误或当前未知项`、`手写与其他附件` 可保留在通用模板中，但 Gate 0 留空不会阻止提交。Gate 0 的附件策略改为 `optional`；学生愿意使用手写推导时仍可提交和引用附件。
 
 非目标：不重新设计 Gate 1–6，不改模板路径，不改变 Git commit、Verifier、Policy 或状态机。
 
@@ -35,7 +34,7 @@ Gate 0 必填且仅必填：
 
 | 角色 | 路径 | 决定 |
 | --- | --- | --- |
-| Gate 0 机器规则 | `course-manifests/week-01.yaml` | 覆盖全局 anchor，声明四个必填栏目 |
+| Gate 0 机器规则 | `course-manifests/week-01.yaml` | 覆盖全局 anchor，声明三个必填栏目和 optional 附件 |
 | 通用作答模板 | `resources/week-01/answer-template.md` | 保持 8 个标题，支持后续 Gate 复用 |
 | 展示契约 | `ActionContract.required_sections` | 从 Manifest 投影，不由 LLM 推断 |
 | 本地/LLM 展示 | Presenter 与 CLI | 明确显示本 Gate 必填栏目 |
@@ -54,17 +53,17 @@ GateDefinition.required_sections
 
 ## 5. 错误与兼容性
 
-- 缺少四个必填栏目中的任意一个：错误明确列出栏目名。
-- 四个非必填栏目为空：Gate 0 结构检查通过。
-- 没有附件或链接失效：仍然拒绝。
+- 缺少三个必填栏目中的任意一个：错误明确列出栏目名。
+- 五个非必填栏目为空：Gate 0 结构检查通过。
+- 没有附件：允许提交；主动填写了附件链接但文件缺失或越界：仍然拒绝。
 - 已存在的 8 栏完整答案继续通过。
 - `ActionContract.required_sections` 使用默认空 tuple，避免破坏旧测试构造器；Coordinator 生成的真实契约必须填入 Manifest 值。
 
 ## 6. 验证与完成条件
 
-- Manifest 测试断言 Gate 0 必填栏目精确等于上述四项。
-- AnswerWorkspace 测试证明四项加附件可以通过，非必填栏目可为空。
-- 缺少任一必填栏目或附件仍失败。
+- Manifest 测试断言 Gate 0 必填栏目精确等于上述三项，附件策略为 optional。
+- AnswerWorkspace 测试证明三项且无附件可以通过，非必填栏目可为空。
+- 缺少任一必填栏目仍失败；提供失效附件链接仍失败。
 - Presenter 和 `learning-os next` 输出包含“本 Gate 必填栏目”。
 - 全量离线测试与 PDF 验证继续通过。
 
