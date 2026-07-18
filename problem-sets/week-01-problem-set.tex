@@ -1,0 +1,205 @@
+\documentclass[11pt,a4paper]{article}
+\newcommand{\PublicationLabel}{Week 1 Problem Set}
+\input{../pdf/course-preamble.tex}
+\hypersetup{pdftitle={Week 1 Problem Set - Attention 如何按内容读取信息}}
+
+\begin{document}
+\CourseCover
+  {Week 1 Problem Set}
+  {Attention 如何按内容读取信息？}
+  {用推导、反例、Lab 与故障诊断掌握单头 attention。}
+  {causal mask 在 score 到 softmax 数据流中的位置。}
+
+\section{课程位置与提交规则}
+
+本题集覆盖单样本、单头、NumPy 前向计算。它不要求 batch、多头、位置编码、Transformer block 或训练。
+
+\textbf{前置能力：}Week 0 的矩阵 shape、点积和投影证据已通过。若闭卷桥接出现关键 shape 或 $K^\top$ 错误，先回到 Week 0。
+
+\textbf{完成顺序：}
+\begin{enumerate}
+\item Part A--D 在 Lab 前完成；
+\item 独立实现 \Code{softmax}、\Code{project\_qkv} 与
+      \Code{scaled\_dot\_product\_attention}；
+\item Part E 和迁移任务引用自己的 Lab 证据。
+\end{enumerate}
+
+\textbf{禁止项：}不要查看隐藏评分样例、参考实现或答案。不要用代码运行替代手算和预测。
+
+\section{Part A：前置桥接与 Q/K/V}
+
+\Question{A1. 闭卷 shape 桥接（Week 0 $\rightarrow$ Week 1）}
+令 token 表 $X\in\mathbb{R}^{3\times4}$，三个投影矩阵
+$W_Q,W_K,W_V\in\mathbb{R}^{4\times2}$。
+\begin{enumerate}[label=(\arabic*)]
+\item 写出 $Q=XW_Q$、$K=XW_K$、$V=XW_V$ 的 shape。
+\item 写出 $QK^\top$、row-wise softmax 后的 weights，以及 $\text{weights}\,V$ 的 shape。
+\item 用一句话说明 $\text{scores}[i,j]$ 中 $i$ 和 $j$ 分别指向谁。
+\item 解释输出的特征宽度为什么来自 V，而不是 Q 或 token 数。
+\end{enumerate}
+\AnswerSpace{34mm}
+
+\Question{A2. 投影改变表示，不改变 token 对应关系（推导）}
+自行选择一个 $X\in\mathbb{R}^{2\times2}$ 和一个非单位 $W_Q\in\mathbb{R}^{2\times2}$。
+\begin{enumerate}[label=(\arabic*)]
+\item 手算 $Q=XW_Q$ 的一个输出位置。
+\item 标注 $Q$ 的两维分别代表什么。
+\item 解释为什么投影后第 $i$ 行仍然属于原来的第 $i$ 个 token。
+\end{enumerate}
+\AnswerSpace{28mm}
+
+\Question{A3. 只改变 $W_V$（预测）}
+保持 $X,W_Q,W_K$ 不变，只改变 $W_V$。在运行任何代码前，分别预测 Q、K、V、scores、weights 与 output 是否必须保持不变，并为每项写一句理由。
+\AnswerSpace{34mm}
+
+\section{Part B：score、转置与缩放}
+
+\Question{B1. 两个 queries 对三个 keys（推导）}
+给定
+\[
+Q=\begin{bmatrix}1&0\\1&1\end{bmatrix},\qquad
+K=\begin{bmatrix}1&0\\0&1\\1&1\end{bmatrix}.
+\]
+\begin{enumerate}[label=(\arabic*)]
+\item 写出 $QK^\top$ 的 shape 并手算完整矩阵。
+\item 对每个 query，先预测哪个 key 的 score 最大，再用结果验证。
+\item 逐项解释 $\text{scores}[0,2]$ 与 $\text{scores}[1,0]$。
+\item 说明同一行中是谁在竞争后续权重。
+\end{enumerate}
+\AnswerSpace{38mm}
+
+\Question{B2. 为什么转置必须发生在 K 上（反例）}
+构造一组 Q、K，使 $QK$ 不能计算或语义与“每个 query 比较所有 keys”不符，但 $QK^\top$ 合法。
+\begin{enumerate}[label=(\arabic*)]
+\item 写出两个输入 shape。
+\item 写出错误运算与正确运算的输出 shape。
+\item 解释转置错误为什么可能在某些方阵输入下悄悄通过 shape 检查。
+\end{enumerate}
+\AnswerSpace{32mm}
+
+\Question{B3. 缩放依赖 $d_k$，不是 token 数（机制）}
+假设 Q、K 的各元素均值为 $0$、方差为 $1$，且不同维近似独立。
+\begin{enumerate}[label=(\arabic*)]
+\item 将 dot product 写成 $d_k$ 个乘积项之和。
+\item 说明其方差为什么随 $d_k$ 增长。
+\item 解释除以 $\sqrt{d_k}$ 如何缓解 softmax 饱和。
+\item 构造 token 数相同但 $d_k$ 不同的两个场景，说明为什么不能除以 token 数。
+\end{enumerate}
+\AnswerSpace{38mm}
+
+\section{Part C：stable row-wise softmax}
+
+\Question{C1. 平移不变性（证明）}
+证明对任意向量 $z$ 和常数 $c$，
+\[
+\operatorname{softmax}(z)=\operatorname{softmax}(z-c\mathbf{1}).
+\]
+随后说明稳定实现为什么选择 $c=\max_i z_i$。
+\AnswerSpace{34mm}
+
+\Question{C2. 极端数值（预测后验证）}
+对 $z=[1000,999,998]$：
+\begin{enumerate}[label=(\arabic*)]
+\item 预测直接计算 $e^z$ 的数值风险。
+\item 写出减去最大值后的向量。
+\item 不使用计算器判断三个权重的相对大小。
+\item 写出实现必须保持的三个性质：shape、有限性和归一化。
+\end{enumerate}
+\AnswerSpace{30mm}
+
+\Question{C3. 错误 axis（反例）}
+构造一个 $2\times3$ score 矩阵，使沿 \Code{axis=-1} 与 \Code{axis=0} 的结果有明显不同。
+\begin{enumerate}[label=(\arabic*)]
+\item 分别说明两种 axis 下是谁在竞争概率。
+\item 写出两种结果应分别在哪个维度上和为 $1$。
+\item 说明错误 axis 为什么可能仍返回正确 shape。
+\end{enumerate}
+\AnswerSpace{36mm}
+
+\section{Part D：从 weights 读取 V}
+
+\Question{D1. 输出宽度来自 V（推导）}
+设 weights 为 $(n_{q},n_{k})$，V 为 $(n_{k},d_v)$。
+\begin{enumerate}[label=(\arabic*)]
+\item 写出 $\text{weights}\,V$ 的输出 shape。
+\item 展开一个输出位置，说明它聚合的是 V 的哪一列。
+\item 解释为什么 key 数必须等于 V 的行数。
+\end{enumerate}
+\AnswerSpace{28mm}
+
+\Question{D2. 只改变一行 V（预测后验证）}
+自行构造两个 queries、三个 keys 和三行 V。保持 Q/K 不变，只改变 V 的一行。
+\begin{enumerate}[label=(\arabic*)]
+\item 运行前预测 scores 与 weights 是否变化。
+\item 预测哪些 output 行可能变化以及变化大小受什么控制。
+\item 用最小 NumPy 实验验证，并记录预测与结果是否一致。
+\end{enumerate}
+\AnswerSpace{34mm}
+
+\Question{D3. 完整 attention 数据流（闭卷）}
+写出并标注每一步 shape：
+\[
+X\rightarrow Q,K,V\rightarrow QK^\top
+\rightarrow \frac{QK^\top}{\sqrt{d_k}}
+\rightarrow \text{weights}\rightarrow \text{output}.
+\]
+在每条箭头旁说明它改变的是 token 数、特征宽度、匹配语义还是归一化语义。
+\AnswerSpace{46mm}
+
+\section{Part E：Lab 后工程问题}
+
+以下问题必须引用自己的实现、输入、断言、grader 类别或 demo 观察。
+
+\Question{E1. 函数契约与错误所有权}
+分别为 \Code{softmax}、\Code{project\_qkv} 和 \Code{scaled\_dot\_product\_attention} 选择一个应由该函数直接拒绝的输入。写出输入 shape、预期异常类型，以及若把错误拖到后续才发现会增加什么排查成本。
+\AnswerSpace{36mm}
+
+\Question{E2. Shape 正确但机制错误}
+构造一个输出 shape 正确、数值也有限，但机制错误的实现反例。它违反 score、缩放、softmax axis 或 value read 中哪条契约？设计一个公开性质检查来发现它。
+\AnswerSpace{34mm}
+
+\Question{E3. 一个真实或主动注入的失败}
+记录：
+\begin{enumerate}[label=(\arabic*)]
+\item 输入与现象；
+\item grader 或自己的错误类别；
+\item 原因假设；
+\item 区分假设的最小验证；
+\item 修复后重新成立的性质；
+\item 下次提前发现它的预防策略。
+\end{enumerate}
+\AnswerSpace{42mm}
+
+\Question{E4. 从 Lab 到独立 demo 的取舍}
+解释 attention inspector 为什么应调用公开接口，而不是复制 Lab 内部实现。指出 inspector 必须自行决定的三个呈现或验证边界。
+\AnswerSpace{28mm}
+
+\section{独立迁移：Attention Inspector}
+
+构建一个不复制 attention 内部实现的小型 inspector，显示 Q、K、V、scores、weights 和 output 的 shape，并展示指定一行 weights 的摘要。
+
+\textbf{运行前预测：}
+\begin{enumerate}[label=(\arabic*)]
+\item 哪个 query 最关注哪个 key？为什么？
+\item 只改变一行 V 后，哪些量必须保持不变？哪些 output 可能变化？
+\end{enumerate}
+
+\textbf{提交证据：}输入、两项预测、实际输出、差异解释，以及一个没有复制 Lab 内部实现的接口说明。
+\AnswerSpace{42mm}
+
+\section{闭卷自检与提交清单}
+
+不看材料，用 $3$--$5$ 分钟回答：attention 接收什么、计算什么、输出什么、为什么需要缩放，以及一种 shape 正确但机制错误的失败方式。
+
+\begin{itemize}[leftmargin=8mm]
+\ChecklistItem{Part A--D 已在 Lab 前独立完成。}
+\ChecklistItem{所有 P0 Lab 检查通过，没有未解释的 shape、axis、数值稳定性或 value read 缺口。}
+\ChecklistItem{Part E 引用了自己的真实实现或评分证据。}
+\ChecklistItem{完成一个未见过的数值迁移题和一个主动注入或真实故障。}
+\ChecklistItem{attention inspector 没有复制 Lab 内部实现，并完成两项预测后验证。}
+\ChecklistItem{能够指出 causal mask 应插在 softmax 前，并说明本周为什么不实现它。}
+\end{itemize}
+
+未关闭的 P0 缺口会阻止进入 causal mask。
+
+\end{document}
