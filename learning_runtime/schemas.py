@@ -82,6 +82,13 @@ class Event:
 
 
 @dataclass(frozen=True)
+class EventDraft:
+    event_type: str
+    payload: Mapping[str, Any]
+    evidence_refs: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
 class LearnerState:
     course_id: str
     phase_id: str
