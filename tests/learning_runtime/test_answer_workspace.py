@@ -44,26 +44,46 @@ def replace_section(text: str, name: str, content: str) -> str:
     )
 
 
-def test_initialize_creates_only_current_gate_and_never_overwrites(
+def test_initialize_creates_all_gate_templates_and_never_overwrites(
     tmp_path: Path,
 ) -> None:
     repo = make_repo(tmp_path)
     workspace = AnswerWorkspace(repo, MANIFEST)
     gate = MANIFEST.gate("week-01-gate-0")
 
-    first = workspace.initialize(gate)
+    first = workspace.initialize_all()
     first_path = repo / first.artifact_path
     original = first_path.read_text(encoding="utf-8")
     first_path.write_text(original + "\n学生自己的内容\n", encoding="utf-8")
-    second = workspace.initialize(gate)
+    second = workspace.initialize_all()
 
     assert first.created is True
     assert second.created is False
     assert "gate_id: week-01-gate-0" in original
     assert "# Gate 0 作答" in original
     assert (repo / first.attachment_dir).is_dir()
-    assert not (repo / "homework_answer/week-01/gate-01.md").exists()
+    assert (repo / "homework_answer/week-01/gate-01.md").is_file()
+    assert (repo / "homework_answer/week-01/attachments/gate-01").is_dir()
     assert first_path.read_text(encoding="utf-8").endswith("学生自己的内容\n")
+
+
+def test_initialize_all_writes_each_gate_its_own_fill_in_format(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    workspace = AnswerWorkspace(repo, MANIFEST)
+
+    workspace.initialize_all()
+
+    gate_zero = (repo / "homework_answer/week-01/gate-00.md").read_text(
+        encoding="utf-8"
+    )
+    gate_one = (repo / "homework_answer/week-01/gate-01.md").read_text(
+        encoding="utf-8"
+    )
+    assert "闭卷写出 Q、K、V、QK^T、weights 和 weights@V 的 shape。" in gate_zero
+    assert "## 闭卷答案" in gate_zero
+    assert "## 运行前预测" not in gate_zero
+    assert "完成 shape 表，并预测只改变 V 时哪些量保持不变。" in gate_one
+    assert "## 运行前预测" in gate_one
 
 
 def test_initialize_shows_gate_specific_format_before_answer(tmp_path: Path) -> None:

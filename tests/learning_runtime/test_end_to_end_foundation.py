@@ -63,7 +63,7 @@ def test_committed_student_answer_becomes_observed_evidence(
     assert main(["start", "week-01", *runtime_args]) == 0
     answer = student_repo / "homework_answer/week-01/gate-00.md"
     assert answer.exists()
-    assert not (student_repo / "homework_answer/week-01/gate-01.md").exists()
+    assert (student_repo / "homework_answer/week-01/gate-01.md").exists()
     assert main(["status", *runtime_args]) == 0
     assert main(["next", *runtime_args]) == 0
 

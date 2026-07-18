@@ -46,31 +46,14 @@ class AnswerWorkspace:
 
         created = not artifact.exists()
         if created:
-            template = self._inside_repo(
-                Path(self.manifest.learner_workspace.template_ref)
-            ).read_text(encoding="utf-8")
-            gate_number = str(int(gate.gate_id.rsplit("-", 1)[-1]))
-            rendered = (
-                template.replace("{{course_id}}", self.manifest.course_id)
-                .replace("{{phase_id}}", self.manifest.phase_id)
-                .replace("{{gate_id}}", gate.gate_id)
-                .replace("{{gate_number}}", gate_number)
-            )
-            required = "、".join(gate.submission.required_sections)
-            attachment = (
-                "至少一个附件"
-                if gate.submission.attachment_policy == "at-least-one"
-                else "可选"
-            )
-            format_notice = (
-                "> **本 Gate 提交格式**\n>\n"
-                f"> 必填栏目：{required}\n>\n"
-                f"> 附件：{attachment}\n\n"
-            )
-            rendered = rendered.replace("\n# Gate", f"\n{format_notice}# Gate", 1)
             artifact.parent.mkdir(parents=True, exist_ok=True)
-            artifact.write_text(rendered, encoding="utf-8")
+            artifact.write_text(self._render_template(gate), encoding="utf-8")
         return AnswerLocation(artifact_relative, attachment_relative, created)
+
+    def initialize_all(self) -> AnswerLocation:
+        """Prepare one non-overwriting fill-in file for every Gate in a phase."""
+        locations = [self.initialize(gate) for gate in self.manifest.gates]
+        return locations[0]
 
     def inspect(self, gate: GateDefinition) -> AnswerInspection:
         artifact_relative = Path(gate.submission.artifact_path)
@@ -135,6 +118,52 @@ class AnswerWorkspace:
         if not candidate.is_relative_to(self.repo_root):
             raise AnswerWorkspaceError(f"path escapes repository: {relative_path}")
         return candidate
+
+    def _render_template(self, gate: GateDefinition) -> str:
+        template = self._inside_repo(
+            Path(self.manifest.learner_workspace.template_ref)
+        ).read_text(encoding="utf-8")
+        required = "、".join(gate.submission.required_sections)
+        attachment = (
+            "至少一个附件"
+            if gate.submission.attachment_policy == "at-least-one"
+            else "可选"
+        )
+        format_notice = (
+            "> **本 Gate 提交格式**\n>\n"
+            f"> 必填栏目：{required}\n>\n"
+            f"> 附件：{attachment}\n\n"
+        )
+        sections = list(gate.submission.required_sections)
+        if "手写与其他附件" not in sections:
+            submit_index = sections.index("提交自检")
+            sections.insert(submit_index, "手写与其他附件")
+        answer_sections = "\n\n".join(
+            f"## {section}\n\n{self._section_prompt(section, required=section in gate.submission.required_sections)}"
+            for section in sections
+        )
+        gate_number = str(int(gate.gate_id.rsplit("-", 1)[-1]))
+        rendered = (
+            template.replace("{{course_id}}", self.manifest.course_id)
+            .replace("{{phase_id}}", self.manifest.phase_id)
+            .replace("{{gate_id}}", gate.gate_id)
+            .replace("{{gate_number}}", gate_number)
+            .replace("{{gate_action}}", gate.action)
+            .replace("{{gate_checks}}", "；".join(gate.checks))
+            .replace("{{answer_sections}}", answer_sections)
+        )
+        return rendered.replace("\n# Gate", f"\n{format_notice}# Gate", 1)
+
+    @staticmethod
+    def _section_prompt(section: str, *, required: bool) -> str:
+        prompts = {
+            "提交自检": "<!-- 请填写：是否先独立作答、是否已手动 commit -->",
+            "手写与其他附件": "<!-- 可选：填写本 Gate 附件的仓库相对链接；没有附件可留空 -->",
+        }
+        if section in prompts:
+            return prompts[section]
+        qualifier = "请独立填写" if required else "可选填写"
+        return f"<!-- {qualifier} -->"
 
     @staticmethod
     def _has_student_content(body: str) -> bool:
