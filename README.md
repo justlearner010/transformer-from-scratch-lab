@@ -57,6 +57,22 @@ uv run python labs/week-01/run_grade.py
 
 `pytest` 只运行公开 smoke tests；`run_grade.py` 在本地存在 `.grader/` 时才执行隐藏评分。
 
+## Self-Learning Runtime Foundation
+
+Week 1 已提供一个本地、确定性的学习状态内核。它一次只给出一个主动任务，显式记录学生提交，并通过追加式事件账本恢复状态：
+
+```bash
+uv run learning-os start week-01
+uv run learning-os next
+uv run learning-os submit --gate week-01-gate-0
+uv run learning-os status
+uv run learning-os resume
+```
+
+运行数据保存在被 Git 忽略的 `.learning-os/`。当前 Foundation **只记录尝试，不验证 Lab 证据，也不诊断失败**；因此 `submit` 只会进入 `evidence_pending`，不会自动判定通过或失败。Evidence Collector、Verifier、Coach 和 Diagnostician 属于下一子项目。
+
+完整边界和恢复规则见 [Runtime Foundation 说明](docs/runtime-foundation.md)。
+
 维护者可用以下命令重建并验证所有正式 PDF：
 
 ```bash

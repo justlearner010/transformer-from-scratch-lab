@@ -136,7 +136,7 @@ Expected: PASS.
 
 - [ ] **Step 5: Write failing replay tests**
 
-Test that `session_started` creates an active Gate 0 state, `attempt_submitted` increments attempts and sets `evidence_pending`, and `transition_applied` changes the Gate/status while preserving verified evidence IDs and last event ID.
+Test that `session_started` creates an active Gate 0 state, `attempt_submitted` increments attempts without changing Gate status, and a State Machine-authored `transition_applied` changes the Gate/status while preserving verified evidence IDs and last event ID.
 
 - [ ] **Step 6: Implement `replay_state(events)`**
 
