@@ -1,0 +1,137 @@
+from pathlib import Path
+import re
+import shutil
+
+import pytest
+
+from learning_runtime.manifest import load_manifest
+from learning_runtime.workspace.answer_workspace import (
+    AnswerWorkspace,
+    AnswerWorkspaceError,
+)
+
+
+ROOT = Path(__file__).resolve().parents[2]
+MANIFEST = load_manifest(ROOT / "course-manifests/week-01.yaml", ROOT)
+
+
+def make_repo(tmp_path: Path) -> Path:
+    repo = tmp_path / "repo"
+    template = repo / MANIFEST.learner_workspace.template_ref
+    template.parent.mkdir(parents=True)
+    shutil.copy2(ROOT / MANIFEST.learner_workspace.template_ref, template)
+    return repo
+
+
+def fill_answer(path: Path, *, attachment_link: str | None = None) -> None:
+    text = path.read_text(encoding="utf-8")
+    text = re.sub(r"<!--.*?-->", "我的独立回答与证据", text)
+    if attachment_link:
+        text = text.replace(
+            "我的独立回答与证据\n\n## 提交自检",
+            f"我的独立回答与证据\n\n![手写推导]({attachment_link})\n\n## 提交自检",
+            1,
+        )
+    path.write_text(text, encoding="utf-8")
+
+
+def test_initialize_creates_only_current_gate_and_never_overwrites(
+    tmp_path: Path,
+) -> None:
+    repo = make_repo(tmp_path)
+    workspace = AnswerWorkspace(repo, MANIFEST)
+    gate = MANIFEST.gate("week-01-gate-0")
+
+    first = workspace.initialize(gate)
+    first_path = repo / first.artifact_path
+    original = first_path.read_text(encoding="utf-8")
+    first_path.write_text(original + "\n学生自己的内容\n", encoding="utf-8")
+    second = workspace.initialize(gate)
+
+    assert first.created is True
+    assert second.created is False
+    assert "gate_id: week-01-gate-0" in original
+    assert "# Gate 0 作答" in original
+    assert (repo / first.attachment_dir).is_dir()
+    assert not (repo / "homework_answer/week-01/gate-01.md").exists()
+    assert first_path.read_text(encoding="utf-8").endswith("学生自己的内容\n")
+
+
+def test_inspect_accepts_filled_answer_and_linked_gate_attachment(
+    tmp_path: Path,
+) -> None:
+    repo = make_repo(tmp_path)
+    workspace = AnswerWorkspace(repo, MANIFEST)
+    gate = MANIFEST.gate("week-01-gate-0")
+    location = workspace.initialize(gate)
+    attachment = repo / location.attachment_dir / "shape.jpg"
+    attachment.write_bytes(b"handwritten-shape")
+    fill_answer(
+        repo / location.artifact_path,
+        attachment_link="attachments/gate-00/shape.jpg",
+    )
+
+    inspection = workspace.inspect(gate)
+
+    assert inspection.artifact_path == Path("homework_answer/week-01/gate-00.md")
+    assert inspection.attachment_paths == (
+        Path("homework_answer/week-01/attachments/gate-00/shape.jpg"),
+    )
+
+
+def test_inspect_rejects_wrong_gate_frontmatter(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    workspace = AnswerWorkspace(repo, MANIFEST)
+    gate = MANIFEST.gate("week-01-gate-0")
+    location = workspace.initialize(gate)
+    path = repo / location.artifact_path
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "gate_id: week-01-gate-0", "gate_id: week-01-gate-1"
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(AnswerWorkspaceError, match="week-01-gate-1"):
+        workspace.inspect(gate)
+
+
+def test_inspect_rejects_blank_template_sections(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    workspace = AnswerWorkspace(repo, MANIFEST)
+    gate = MANIFEST.gate("week-01-gate-0")
+    workspace.initialize(gate)
+
+    with pytest.raises(AnswerWorkspaceError, match="闭卷答案"):
+        workspace.inspect(gate)
+
+
+def test_gate_zero_requires_at_least_one_attachment(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    workspace = AnswerWorkspace(repo, MANIFEST)
+    gate = MANIFEST.gate("week-01-gate-0")
+    location = workspace.initialize(gate)
+    fill_answer(repo / location.artifact_path)
+
+    with pytest.raises(AnswerWorkspaceError, match="attachment"):
+        workspace.inspect(gate)
+
+
+@pytest.mark.parametrize(
+    "link",
+    [
+        "attachments/gate-00/missing.jpg",
+        "../../outside.jpg",
+    ],
+)
+def test_inspect_rejects_missing_or_escaping_attachment(
+    tmp_path: Path, link: str
+) -> None:
+    repo = make_repo(tmp_path)
+    workspace = AnswerWorkspace(repo, MANIFEST)
+    gate = MANIFEST.gate("week-01-gate-0")
+    location = workspace.initialize(gate)
+    fill_answer(repo / location.artifact_path, attachment_link=link)
+
+    with pytest.raises(AnswerWorkspaceError, match="attachment"):
+        workspace.inspect(gate)
