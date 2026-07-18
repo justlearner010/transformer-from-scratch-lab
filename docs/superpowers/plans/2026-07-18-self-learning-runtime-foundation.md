@@ -42,7 +42,10 @@ from learning_runtime.cli import build_parser
 def test_cli_exposes_foundation_commands() -> None:
     parser = build_parser()
     for command in ("start", "next", "submit", "status", "resume"):
-        args = parser.parse_args([command] + (["week-01"] if command == "start" else []))
+        suffix = ["week-01"] if command == "start" else []
+        if command == "submit":
+            suffix = ["--gate", "week-01-gate-0"]
+        args = parser.parse_args([command, *suffix])
         assert args.command == command
 ```
 
@@ -53,7 +56,7 @@ Expected: FAIL because `learning_runtime.cli` does not exist.
 
 - [ ] **Step 3: Add the package entry point and private state path**
 
-Add `pyyaml>=6.0` to project dependencies, add `learning-os = "learning_runtime.cli:main"` under `[project.scripts]`, add `.learning-os/` to `.gitignore`, and implement an argparse parser with the five commands. `submit` must require `--gate`.
+Add `pyyaml>=6.0` to project dependencies, add `learning-os = "learning_runtime.cli:main"` under `[project.scripts]`, enable uv package installation with explicit `learning_runtime*` package discovery, add `.learning-os/` to `.gitignore`, and implement an argparse parser with the five commands. `submit` must require `--gate`.
 
 - [ ] **Step 4: Verify GREEN and lock dependencies**
 
