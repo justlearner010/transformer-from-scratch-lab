@@ -28,3 +28,10 @@ def test_publication_outputs_use_stable_paths() -> None:
         "problem-sets/week-00-problem-set.pdf",
         "problem-sets/week-01-problem-set.pdf",
     }
+
+
+def test_every_pdf_output_exists_and_is_not_empty() -> None:
+    for target in TARGETS:
+        output = ROOT / target.output
+        assert output.exists(), f"missing output: {target.output}"
+        assert output.stat().st_size > 10_000, f"unexpectedly small: {target.output}"

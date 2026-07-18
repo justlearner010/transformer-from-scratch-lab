@@ -65,6 +65,11 @@ $\rightarrow$ 工程反馈 $\rightarrow$ 闭卷迁移。
 
 \section{Gate 路线与通过证据}
 
+\begingroup
+\small
+\setlength{\parskip}{0.2em}
+\titlespacing*{\subsection}{0pt}{0.45em}{0.15em}
+
 \Gate{Gate 0：环境与二维 shape}{运行 \Code{uv sync --group dev}，并正确解释一个 $(3,2)$ 数组有三行两列。}
 
 \Gate{Gate 1：token 表}{创建一个小型二维 NumPy 数组，标注行、列和 shape。}
@@ -78,6 +83,7 @@ $\rightarrow$ 工程反馈 $\rightarrow$ 闭卷迁移。
 \Gate{Gate 5：对照验证}{用 NumPy 的 \Code{@} 验证同一乘积，记录一个原先容易弄反的维度。}
 
 \Gate{Gate 6：故障诊断}{制造内维度不匹配，解释错误原因以及它出现在 $Q=XW_Q$ 时意味着什么。}
+\endgroup
 
 \section{运行与停止规则}
 
@@ -89,7 +95,7 @@ uv run python labs/week-00/run_grade.py
 完成阅读后停止追加材料，转入概念练习和 Lab。若某个 Gate 的证据不足，回到该 Gate；不要用运行成功代替 shape 或机制解释。
 
 \section{提交清单}
-\begin{itemize}[leftmargin=8mm]
+\begin{itemize}[leftmargin=8mm,itemsep=0.15em,topsep=0.2em]
 \ChecklistItem{概念题在 Lab 前独立完成。}
 \ChecklistItem{Shape Checker 的公开与 hidden tests 已通过。}
 \ChecklistItem{工程作业引用了自己的输入、输出或评分反馈。}
