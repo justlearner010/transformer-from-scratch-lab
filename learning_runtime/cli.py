@@ -3,17 +3,10 @@ from collections.abc import Sequence
 from pathlib import Path
 import sys
 
-from learning_runtime.coordinator import Coordinator
-from learning_runtime.manifest import ManifestError, load_manifest
-from learning_runtime.schemas import ActionContract, GateStatus, LearnerState
-from learning_runtime.state_machine import LearningStateMachine
-from learning_runtime.storage.event_ledger import (
-    EventLedger,
-    LedgerCorruptionError,
-)
-from learning_runtime.storage.learner_state import replay_state
-from learning_runtime.workspace.answer_workspace import AnswerWorkspace
-from learning_runtime.workspace.git_guard import GitGuard
+from learning_runtime.manifest import ManifestError
+from learning_runtime.runtime import LearningRuntime, SubmissionReceipt
+from learning_runtime.schemas import ActionContract, LearnerState
+from learning_runtime.storage.event_ledger import LedgerCorruptionError
 
 
 DEFAULT_RUNTIME_DIR = Path(".learning-os")
@@ -52,20 +45,6 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _manifest_for_phase(phase: str):
-    if phase != "week-01":
-        raise ValueError(f"当前 MVP 只支持 week-01，收到：{phase}")
-    return load_manifest(REPO_ROOT / "course-manifests/week-01.yaml", REPO_ROOT)
-
-
-def _load_state(runtime_dir: Path) -> tuple[EventLedger, LearnerState]:
-    ledger = EventLedger(runtime_dir / "events.jsonl")
-    events = ledger.read()
-    if not events:
-        raise ValueError("没有可恢复的学习 session；请先运行 start week-01。")
-    return ledger, replay_state(events)
-
-
 def _render_action(action: ActionContract) -> None:
     checks = "；".join(action.checks)
     evidence = "、".join(action.evidence_index) or "无"
@@ -87,137 +66,36 @@ def _render_state(state: LearnerState) -> None:
     print(f"最后事件：{state.last_event_id}")
 
 
-def _start(phase: str, runtime_dir: Path) -> int:
-    manifest = _manifest_for_phase(phase)
-    ledger = EventLedger(runtime_dir / "events.jsonl")
-    if ledger.path.exists():
-        print(
-            f"学习 session 已经存在：{ledger.path}；请使用 resume。",
-            file=sys.stderr,
-        )
-        return 2
-    branch = GitGuard(REPO_ROOT).assert_student_branch(
-        manifest.learner_workspace.protected_branches
+def _render_submission(receipt: SubmissionReceipt) -> None:
+    print(
+        f"已记录 {receipt.state.current_gate} 的一次独立尝试："
+        f"{receipt.evidence_id}。"
     )
-    first_gate = manifest.gates[0]
-    answer = AnswerWorkspace(REPO_ROOT, manifest).initialize(first_gate)
-    ledger.append(
-        "session_started",
-        {
-            "course_id": manifest.course_id,
-            "phase_id": manifest.phase_id,
-            "current_gate": first_gate.gate_id,
-            "unresolved_p0_nodes": list(first_gate.knowledge_node_ids),
-            "manifest_path": "course-manifests/week-01.yaml",
-            "student_branch": branch,
-            "answer_path": answer.artifact_path.as_posix(),
-        },
-    )
-    state = replay_state(ledger.read())
-    _render_action(Coordinator(manifest).next_action(state))
-    return 0
-
-
-def _status(runtime_dir: Path, *, resumed: bool = False) -> int:
-    _, state = _load_state(runtime_dir)
-    if resumed:
-        print("已从事件账本恢复学习状态。")
-    _render_state(state)
-    return 0
-
-
-def _next(runtime_dir: Path) -> int:
-    _, state = _load_state(runtime_dir)
-    manifest = _manifest_for_phase(state.phase_id)
-    _render_action(Coordinator(manifest).next_action(state))
-    return 0
-
-
-def _submit(runtime_dir: Path, gate_id: str) -> int:
-    ledger, state = _load_state(runtime_dir)
-    manifest = _manifest_for_phase(state.phase_id)
-    if gate_id != state.current_gate:
-        raise ValueError(
-            f"提交 Gate {gate_id} 与当前 Gate {state.current_gate} 不一致。"
-        )
-    if state.gate_status is not GateStatus.ACTIVE:
-        raise ValueError(
-            f"当前状态 {state.gate_status.value} 不允许再次提交。"
-        )
-
-    gate = manifest.gate(gate_id)
-    guard = GitGuard(REPO_ROOT)
-    guard.assert_student_branch(manifest.learner_workspace.protected_branches)
-    inspection = AnswerWorkspace(REPO_ROOT, manifest).inspect(gate)
-    evidence_paths = [
-        inspection.artifact_path,
-        *inspection.attachment_paths,
-    ]
-    snapshot = guard.snapshot_committed(evidence_paths)
-    existing_events = ledger.read()
-    observed_count = sum(
-        event.event_type == "artifact_observed" for event in existing_events
-    )
-    evidence_id = f"evidence-{observed_count + 1:04d}"
-    artifact_key = inspection.artifact_path.as_posix()
-    attachments = [
-        {
-            "path": path.as_posix(),
-            "content_hash": snapshot.content_hashes[path.as_posix()],
-        }
-        for path in inspection.attachment_paths
-    ]
-    evidence_refs = (evidence_id,)
-    ledger.append(
-        "artifact_observed",
-        {
-            "evidence_id": evidence_id,
-            "type": "committed-answer",
-            "source": artifact_key,
-            "observation": {
-                "gate_id": gate_id,
-                "branch": snapshot.branch,
-                "commit_sha": snapshot.commit_sha,
-                "content_hash": snapshot.content_hashes[artifact_key],
-                "attachments": attachments,
-            },
-        },
-        evidence_refs,
-    )
-    ledger.append(
-        "attempt_submitted",
-        {"gate_id": gate_id, "evidence_id": evidence_id},
-        evidence_refs,
-    )
-    state_after_attempt = replay_state(ledger.read())
-    transition = LearningStateMachine(manifest).transition(
-        state_after_attempt, GateStatus.EVIDENCE_PENDING
-    )
-    ledger.append(
-        transition.event_type,
-        dict(transition.payload),
-        evidence_refs,
-    )
-    print(f"已记录 {gate_id} 的一次独立尝试：{evidence_id}。")
-    print(f"证据来源：{snapshot.branch}@{snapshot.commit_sha[:12]}")
+    print(f"证据来源：{receipt.branch}@{receipt.commit_sha[:12]}")
     print("当前没有 Verifier，因此不会自动判定通过或失败。")
-    _render_state(replay_state(ledger.read()))
-    return 0
+    _render_state(receipt.state)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    runtime = LearningRuntime(REPO_ROOT, args.runtime_dir)
     try:
         if args.command == "start":
-            return _start(args.phase, args.runtime_dir)
+            _render_action(runtime.start_session(args.phase))
+            return 0
         if args.command == "next":
-            return _next(args.runtime_dir)
+            _render_action(runtime.next_action())
+            return 0
         if args.command == "submit":
-            return _submit(args.runtime_dir, args.gate)
+            _render_submission(runtime.submit_answer(args.gate))
+            return 0
         if args.command == "status":
-            return _status(args.runtime_dir)
+            _render_state(runtime.get_state())
+            return 0
         if args.command == "resume":
-            return _status(args.runtime_dir, resumed=True)
+            print("已从事件账本恢复学习状态。")
+            _render_state(runtime.get_state())
+            return 0
     except (ManifestError, LedgerCorruptionError, ValueError, KeyError) as error:
         print(str(error), file=sys.stderr)
         return 2

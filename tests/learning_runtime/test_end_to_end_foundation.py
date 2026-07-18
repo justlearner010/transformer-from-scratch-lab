@@ -133,6 +133,11 @@ def test_committed_student_answer_becomes_observed_evidence(
     assert state.gate_status is GateStatus.EVIDENCE_PENDING
     assert "当前 Gate：week-01-gate-0" in output
     assert "作答文件：homework_answer/week-01/gate-00.md" in output
+    assert (
+        "已记录 week-01-gate-0 的一次独立尝试：evidence-0001"
+        in output
+    )
+    assert "证据来源：learner/test/week-01@" in output
     assert "不会自动判定通过或失败" in output
 
 
