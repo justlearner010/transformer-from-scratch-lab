@@ -75,6 +75,10 @@ git commit -m "answer: week 01 gate 0"
 
 可用命令：`/submit`、`/retry`、`/status`、`/next`、`/help`、`/quit`。普通文字只用于解释当前任务，永远不会触发提交或状态变化。Agent 不创建分支、不写答案、不 commit、不 push。
 
+### Gate 0 作答格式
+
+启动 Agent 时和新生成的作答文件顶部都会显示当前 Gate 的格式。Gate 0 现在只必填：`闭卷答案`、`推导或机制解释`、`提交自检`。手写或其他附件完全可选；如果主动引用附件，文件必须位于本 Gate 的附件目录且已经 commit。模板里的其余栏目供后续 Gate 使用，Gate 0 可以留空。
+
 对话 Qwen 只能生成显示文本；独立 Verifier 只能逐项返回 rubric 结果；`PolicyEngine` 和状态机拥有最终状态权。相同答案、附件、rubric 和 verifier 版本会复用第一次有效判定。对话记录不持久化，学习进度只从 `.learning-os/events.jsonl` 恢复。Gate 1–6 尚无 rubric，因此不会让模型自由判分。
 
 真实模型调用只从环境变量读取凭据：

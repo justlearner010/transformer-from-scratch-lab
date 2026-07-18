@@ -42,6 +42,23 @@ def test_plain_text_never_writes_state(student_repo):
     assert tuple(runtime.ledger.read()) == before
 
 
+class GenericPresenter:
+    def present(self, request):
+        return "模型生成的任务说明"
+
+
+def test_agent_open_always_prefixes_trusted_format_requirements(student_repo):
+    git(student_repo, "switch", "-c", "learner/test/week-01")
+    runtime = LearningRuntime(student_repo, student_repo / ".learning-os")
+    session = AgentSession(runtime, GenericPresenter(), verifier=None)
+
+    turn = session.open("week-01")
+
+    assert turn.text.startswith("本 Gate 必填栏目：闭卷答案、推导或机制解释、提交自检")
+    assert "附件：可选" in turn.text
+    assert "模型生成的任务说明" in turn.text
+
+
 class PayloadVerifier:
     identity = VerifierIdentity(
         "fixture", "fixture", "gate-rubric-v1", "criterion-json-v1",

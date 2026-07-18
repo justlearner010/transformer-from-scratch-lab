@@ -104,10 +104,19 @@ class AgentSession:
         decision=None,
     ) -> AgentTurn:
         state = self.runtime.get_state()
-        return AgentTurn(self.presenter.present(PresentationRequest(
+        text = self.presenter.present(PresentationRequest(
             kind=kind,
             action=action,
             state=state,
             student_message=student_message,
             decision=decision,
-        )))
+        ))
+        if kind is PresentationKind.ACTION:
+            required = "、".join(action.required_sections)
+            attachment = (
+                "至少一个附件"
+                if action.attachment_policy == "at-least-one"
+                else "可选"
+            )
+            text = f"本 Gate 必填栏目：{required}\n附件：{attachment}\n\n{text}"
+        return AgentTurn(text)

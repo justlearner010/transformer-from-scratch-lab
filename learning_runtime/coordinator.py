@@ -35,4 +35,5 @@ class Coordinator:
             hint_level=state.hint_level,
             evidence_index=state.verified_evidence_ids,
             required_sections=gate.submission.required_sections,
+            attachment_policy=gate.submission.attachment_policy,
         )
