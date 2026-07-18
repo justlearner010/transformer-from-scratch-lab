@@ -297,7 +297,7 @@ class LearningRuntime:
 Move the existing workflow without changing its rules:
 
 - `_manifest_for_phase` becomes `_manifest(phase)` on the service;
-- `_load_state` becomes `_session()` returning `(EventLedger, LearnerState)`;
+- `_load_state` becomes `get_state()` and always replays the service Ledger;
 - `start_session` validates branch, initializes the current Gate, appends `session_started`, then returns `ActionContract`;
 - `next_action` replays state and returns `Coordinator.next_action`;
 - `submit_answer` performs all answer/Git checks before events, appends `artifact_observed`, `attempt_submitted`, and `transition_applied`, then returns `SubmissionReceipt`;
