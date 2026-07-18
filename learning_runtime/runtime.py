@@ -76,6 +76,20 @@ class LearningRuntime:
         )
         return Coordinator(manifest).next_action(self.get_state())
 
+    def open_session(self, phase: str) -> ActionContract:
+        manifest = self._manifest(phase)
+        GitGuard(self.repo_root).assert_student_branch(
+            manifest.learner_workspace.protected_branches
+        )
+        if not self.ledger.path.exists():
+            return self.start_session(phase)
+        state = self.get_state()
+        if state.phase_id != phase:
+            raise ValueError(
+                f"existing session phase {state.phase_id} does not match {phase}"
+            )
+        return Coordinator(manifest).next_action(state)
+
     def next_action(self) -> ActionContract:
         state = self.get_state()
         return Coordinator(self._manifest(state.phase_id)).next_action(state)
