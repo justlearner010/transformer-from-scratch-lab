@@ -5,3 +5,4 @@ __pycache__/
 .learning-os/
 tmp/pdfs/
 *.pyc
+*.egg-info/
