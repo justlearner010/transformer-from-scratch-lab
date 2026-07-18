@@ -1,0 +1,81 @@
+\usepackage[margin=20mm,headheight=15pt]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{fontspec}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{needspace}
+
+\setmainfont{Arial Unicode MS}
+\setmonofont{Menlo}
+\XeTeXlinebreaklocale "zh"
+\XeTeXlinebreakskip = 0pt plus 1pt
+
+\definecolor{CourseNavy}{HTML}{172554}
+\definecolor{CourseBlue}{HTML}{1D4ED8}
+\definecolor{CourseSlate}{HTML}{475569}
+\definecolor{CoursePale}{HTML}{EFF6FF}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=CourseBlue,
+  urlcolor=CourseBlue,
+  pdfauthor={Transformer From Scratch Lab}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.65em}
+\setlength{\emergencystretch}{3em}
+\setlist{itemsep=0.35em,topsep=0.45em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{CourseSlate}Transformer From Scratch Lab}
+\fancyhead[R]{\small\color{CourseSlate}\PublicationLabel}
+\fancyfoot[C]{\color{CourseSlate}\thepage}
+
+\titleformat{\section}
+  {\Large\bfseries\color{CourseBlue}}{}{0pt}{}
+\titleformat{\subsection}
+  {\large\bfseries\color{CourseNavy}}{}{0pt}{}
+
+\newcommand{\CourseCover}[4]{%
+  \thispagestyle{empty}
+  \begin{center}
+    {\large\color{CourseSlate}Transformer From Scratch Lab\par}
+    \vspace{12mm}
+    {\Huge\bfseries\color{CourseNavy}#1\par}
+    \vspace{4mm}
+    {\Large #2\par}
+  \end{center}
+  \vspace{14mm}
+  \begin{center}
+  \fcolorbox{CourseBlue}{CoursePale}{%
+    \begin{minipage}{0.84\textwidth}
+      \textbf{本周能力}\quad #3\par
+      \vspace{3mm}
+      \textbf{完成后解锁}\quad #4
+    \end{minipage}%
+  }
+  \end{center}
+  \vfill
+  \begin{center}
+    \small\color{CourseSlate}Evidence-gated, answer-free learning
+  \end{center}
+  \newpage
+}
+
+\newcommand{\Gate}[2]{%
+  \Needspace{5\baselineskip}
+  \subsection*{#1}
+  \textbf{通过证据：}#2\par
+}
+\newcommand{\Question}[1]{%
+  \Needspace{6\baselineskip}
+  \subsection*{#1}
+}
+\newcommand{\AnswerSpace}[1]{\par\vspace*{#1}}
+\newcommand{\ChecklistItem}[1]{\item[$\square$] #1}
+\newcommand{\Code}[1]{\texttt{#1}}

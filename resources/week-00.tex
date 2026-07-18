@@ -1,47 +1,41 @@
 \documentclass[11pt,a4paper]{article}
-\usepackage[margin=20mm]{geometry}
-\usepackage{amsmath,amssymb}
-\usepackage{xcolor}
-\usepackage{fontspec}
-\usepackage{hyperref}
-\setmainfont{Arial Unicode MS}
-\setmonofont{Menlo}
-\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
-\definecolor{navy}{HTML}{172554}
-\definecolor{blue}{HTML}{1D4ED8}
-\setlength{\parskip}{0.7em}
-\setlength{\parindent}{0pt}
-\newcommand{\heading}[1]{\section*{\color{blue}#1}}
-\newcommand{\resource}[1]{\subsection*{#1}}
+\newcommand{\PublicationLabel}{Week 0 Learning Guide}
+\input{../pdf/course-preamble.tex}
+\hypersetup{pdftitle={Week 0 Learning Guide - 先看懂信息怎样流动}}
+
 \begin{document}
+\CourseCover
+  {Week 0 Learning Guide}
+  {先看懂信息怎样流动}
+  {准确追踪 token 表、矩阵投影、点积与 stable softmax 的输入、输出和 shape。}
+  {Week 1：独立解释并实现单头 scaled dot-product attention。}
 
-\begin{center}
-{\Large\color{navy} Transformer From Scratch Lab}\par
-\vspace{8mm}
-{\huge\color{navy} Week 0 Resources}\par
-\vspace{4mm}
-{\Large 看懂每一步信息如何变化}
-\end{center}
+\section{如何使用这份 Learning Guide}
 
-\heading{如何使用这份资源栏}
-本周不泛读。每份材料只服务于从 token 表到 Week 1 attention 的一段信息流。\\
+本周不泛读。每份材料只服务于从 token 表到 Week 1 attention 的一段信息流。
 读完一项后立即回答阅读问题并留下完成证据；答不出时只回读该项，不追加新材料。
 
-\resource{1. Linear Algebra：让 shape 可预测}
+\textbf{进入条件：}能运行本仓库，能读出一个二维数组的行、列与 shape；不要求提前理解 attention。
+
+\textbf{学习顺序：}
+前置检查 $\rightarrow$ 精确阅读 $\rightarrow$ 概念练习 $\rightarrow$ Shape Checker Lab
+$\rightarrow$ 工程反馈 $\rightarrow$ 闭卷迁移。
+
+\section{精确阅读材料}
+
+\subsection{1. Linear Algebra：让 shape 可预测}
 \textbf{链接：}\href{https://d2l.ai/chapter_preliminaries/linear-algebra.html}{D2L 2.3 Linear Algebra}
 
-\textbf{精确范围：}只读 Scalars、Vectors、Matrices、Tensors、Reduction、Non-Reduction Sum。\\
-继续读 Dot Products、Matrix-Vector Products、Matrix-Matrix Multiplication；跳过范数、导数和特征分解。
+\textbf{精确范围：}只读 Scalars、Vectors、Matrices、Tensors、Reduction、Non-Reduction Sum、Dot Products、Matrix-Vector Products 和 Matrix-Matrix Multiplication；跳过范数、导数与特征分解。
 
 \textbf{带着的问题读：}若 $X\in\mathbb{R}^{3\times2}$、$W\in\mathbb{R}^{2\times2}$，为什么 $XW\in\mathbb{R}^{3\times2}$？输出元素 $(XW)_{i,j}$ 从哪里来？
 
 \textbf{完成证据：}写出内维度规则，并手算一个输出元素。
 
-\resource{2. Softmax：将 score 变成权重}
+\subsection{2. Softmax：将 score 变成权重}
 \textbf{链接：}\href{https://d2l.ai/chapter_linear-classification/softmax-regression.html}{D2L 4.1 Softmax Regression}
 
-\textbf{精确范围：}只读 Softmax Operation、Vectorization、Loss Function 与 Information Theory Basics。\\
-本周不实现 softmax regression。
+\textbf{精确范围：}只读 Softmax Operation、Vectorization、Loss Function 与 Information Theory Basics；本周不实现 softmax regression。
 
 \textbf{带着的问题读：}为什么 score 需要被归一化为权重？为什么
 \[
@@ -51,17 +45,16 @@
 
 \textbf{完成证据：}对 $z=[2,1,0]$ 手算 softmax，并说明同加常数后为何不变。
 
-\resource{3. Queries, Keys, Values：建立 attention 直觉}
+\subsection{3. Queries, Keys, Values：建立 attention 直觉}
 \textbf{链接：}\href{https://d2l.ai/chapter_attention-mechanisms-and-transformers/queries-keys-values.html}{D2L 11.1 Queries, Keys, and Values}
 
-\textbf{精确范围：}只读开头的 Queries, Keys, and Values 定义，以及 attention pooling 的直觉与 summary。\\
-不进入实现代码和后续章节。
+\textbf{精确范围：}只读开头的 Queries, Keys, and Values 定义、attention pooling 的直觉与 summary；不进入实现代码和后续章节。
 
 \textbf{带着的问题读：}dot product 为什么可以作为 query 与 key 的匹配分数，却不能直接作为最终读取结果？
 
 \textbf{完成证据：}写出一个两 token 的点积例子，并指出它还缺少哪一步才会成为读取权重。
 
-\resource{4. 原始论文：定位完整模型，而非推导公式}
+\subsection{4. 原始论文：定位完整模型，而非推导公式}
 \textbf{链接：}\href{https://arxiv.org/abs/1706.03762}{Attention Is All You Need}
 
 \textbf{精确范围：}只读 abstract 和 Figure 1。只看 encoder-decoder 的整体数据流；不读公式与第 3 节细节。
@@ -70,9 +63,38 @@
 
 \textbf{完成证据：}画一条从 token 到预测的粗略箭头图，标出 Week 0 已经认识的操作。
 
-\heading{停止规则与下一步}
-完成四项后停止阅读，转入 Week 0 的任务与概念作业。Week 1 才精读论文第 $3.2.1$ 节的 scaled dot-product attention。
+\section{Gate 路线与通过证据}
 
-\vfill
-\begin{center}\small Week 0 Resources\end{center}
+\Gate{Gate 0：环境与二维 shape}{运行 \Code{uv sync --group dev}，并正确解释一个 $(3,2)$ 数组有三行两列。}
+
+\Gate{Gate 1：token 表}{创建一个小型二维 NumPy 数组，标注行、列和 shape。}
+
+\Gate{Gate 2：投影 shape}{为 token 表选择非单位投影矩阵，在计算前预测输出 shape。}
+
+\Gate{Gate 3：一个输出位置}{指出输出位置来自 token 表的哪一行、投影矩阵的哪一列，并手算点积。}
+
+\Gate{Gate 4：完整投影}{使用 Lab 的手写矩阵乘法得到完整结果，并解释每一行为什么仍对应原 token。}
+
+\Gate{Gate 5：对照验证}{用 NumPy 的 \Code{@} 验证同一乘积，记录一个原先容易弄反的维度。}
+
+\Gate{Gate 6：故障诊断}{制造内维度不匹配，解释错误原因以及它出现在 $Q=XW_Q$ 时意味着什么。}
+
+\section{运行与停止规则}
+
+\begin{verbatim}
+uv run pytest labs/week-00/tests -v
+uv run python labs/week-00/run_grade.py
+\end{verbatim}
+
+完成阅读后停止追加材料，转入概念练习和 Lab。若某个 Gate 的证据不足，回到该 Gate；不要用运行成功代替 shape 或机制解释。
+
+\section{提交清单}
+\begin{itemize}[leftmargin=8mm]
+\ChecklistItem{概念题在 Lab 前独立完成。}
+\ChecklistItem{Shape Checker 的公开与 hidden tests 已通过。}
+\ChecklistItem{工程作业引用了自己的输入、输出或评分反馈。}
+\ChecklistItem{记录了一个真实错误或主动注入错误。}
+\ChecklistItem{能闭卷画出 Week 0 到 Week 1 的信息流。}
+\end{itemize}
+
 \end{document}
