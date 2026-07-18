@@ -1,0 +1,30 @@
+from pathlib import Path
+
+from scripts.course_pdf_targets import TARGETS
+
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def test_every_pdf_target_has_a_unique_source_and_output() -> None:
+    sources = [target.source for target in TARGETS]
+    outputs = [target.output for target in TARGETS]
+    assert len(sources) == len(set(sources))
+    assert len(outputs) == len(set(outputs))
+
+
+def test_every_pdf_source_uses_the_shared_preamble() -> None:
+    for target in TARGETS:
+        source = ROOT / target.source
+        assert source.exists(), f"missing source: {target.source}"
+        text = source.read_text(encoding="utf-8")
+        assert r"\input{../pdf/course-preamble.tex}" in text
+
+
+def test_publication_outputs_use_stable_paths() -> None:
+    assert {str(target.output) for target in TARGETS} == {
+        "resources/week-00.pdf",
+        "resources/week-01.pdf",
+        "problem-sets/week-00-problem-set.pdf",
+        "problem-sets/week-01-problem-set.pdf",
+    }
