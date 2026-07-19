@@ -2,5 +2,8 @@
 __pycache__/
 .pytest_cache/
 .grader/
+.learning-os/
+.env
 tmp/pdfs/
 *.pyc
+*.egg-info/

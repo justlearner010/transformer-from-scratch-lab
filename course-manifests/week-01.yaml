@@ -1,0 +1,235 @@
+course_id: transformer-from-scratch
+phase_id: week-01
+capability_question: 一个 token 如何依据内容选择性读取其他 token？
+
+learner_workspace:
+  answer_root: homework_answer
+  template_ref: resources/week-01/answer-template.md
+  commit_required: true
+  required_sections: &answer_sections
+    - 闭卷答案
+    - 运行前预测
+    - 推导或机制解释
+    - 验证过程与结果
+    - 预测和结果的差异
+    - 真实错误或当前未知项
+    - 手写与其他附件
+    - 提交自检
+
+knowledge_nodes:
+  - node_id: matrix-shape
+    type: mechanism-contract
+    priority: P0
+  - node_id: qkv-score-semantics
+    type: mechanism
+    priority: P0
+  - node_id: stable-softmax
+    type: mechanism-diagnosis
+    priority: P0
+  - node_id: value-read
+    type: mechanism
+    priority: P0
+  - node_id: single-head-attention
+    type: integration
+    priority: P0
+  - node_id: failure-diagnosis
+    type: diagnosis
+    priority: P1
+  - node_id: attention-inspector
+    type: integration-procedure
+    priority: P1
+
+artifact_refs:
+  task_chain: tasks/week-01.md
+  learning_guide: resources/week-01.pdf
+  problem_set: problem-sets/week-01-problem-set.pdf
+  lab_contract: labs/week-01/README.md
+  public_tests: labs/week-01/tests/test_week_01_smoke.py
+  grader_entry: labs/week-01/run_grade.py
+
+evidence_requirements:
+  - prediction
+  - explanation
+  - constrained-implementation
+  - failure-or-variation
+  - independent-transfer
+
+allowed_hint_levels: [0, 1, 2, 3]
+
+failure_routes:
+  week-00-review: weeks/week-00/README.md
+
+dependencies:
+  week-01-gate-0: []
+  week-01-gate-1: [week-01-gate-0]
+  week-01-gate-2: [week-01-gate-1]
+  week-01-gate-3: [week-01-gate-2]
+  week-01-gate-4: [week-01-gate-3]
+  week-01-gate-5: [week-01-gate-4]
+  week-01-gate-6: [week-01-gate-5]
+
+gates:
+  - gate_id: week-01-gate-0
+    knowledge_node_ids: [matrix-shape]
+    task_layer: T1
+    action: 闭卷写出 Q、K、V、QK^T、weights 和 weights@V 的 shape。
+    checks:
+      - shape 是否闭合
+      - 是否能解释 K.T
+    required_evidence:
+      - criterion_id: shape-bridge-complete
+        type: explanation
+        artifact_ref: resources/week-01/pre-class.md
+        priority: P0
+        independent: true
+    verifier: rubric
+    pass_rule: all-required
+    rollback_target: week-00-review
+    escalation_conditions: [前置证据冲突, Week 0 产物不可访问]
+    rubric_ref: course-manifests/rubrics/week-01.yaml
+    rubric_version: 1
+    submission:
+      artifact_path: homework_answer/week-01/gate-00.md
+      required_sections:
+        - 闭卷答案
+        - 推导或机制解释
+        - 提交自检
+      attachment_policy: optional
+
+  - gate_id: week-01-gate-1
+    knowledge_node_ids: [qkv-score-semantics]
+    task_layer: T1
+    action: 完成 shape 表，并预测只改变 V 时哪些量保持不变。
+    checks: [Q/K/V 职责, 只改 V 的预测]
+    required_evidence:
+      - criterion_id: qkv-roles-explained
+        type: explanation
+        artifact_ref: resources/week-01/exercises.md
+        priority: P1
+        independent: true
+    verifier: rubric
+    pass_rule: all-required
+    rollback_target: week-01-gate-0
+    escalation_conditions: [解释与 shape 证据冲突]
+    submission:
+      artifact_path: homework_answer/week-01/gate-01.md
+      required_sections: *answer_sections
+      attachment_policy: optional
+
+  - gate_id: week-01-gate-2
+    knowledge_node_ids: [qkv-score-semantics]
+    task_layer: T1-T4
+    action: 手算 score，并构造一次省略 K.T 的反例。
+    checks: [scores 行列语义, K.T 必要性]
+    required_evidence:
+      - criterion_id: score-semantics
+        type: failure-or-variation
+        artifact_ref: resources/week-01/exercises.md
+        priority: P0
+        independent: true
+    verifier: rubric
+    pass_rule: all-required
+    rollback_target: week-01-gate-1
+    escalation_conditions: [转置反例无法区分假设]
+    submission:
+      artifact_path: homework_answer/week-01/gate-02.md
+      required_sections: *answer_sections
+      attachment_policy: optional
+
+  - gate_id: week-01-gate-3
+    knowledge_node_ids: [stable-softmax]
+    task_layer: T1-T4
+    action: 先预测极端数值和错误 axis 的结果，再用最小例子验证。
+    checks: [减最大值, axis=-1, sqrt(d_k)]
+    required_evidence:
+      - criterion_id: stable-softmax-finite-output
+        type: failure-or-variation
+        artifact_ref: resources/week-01/exercises.md
+        priority: P0
+        independent: true
+      - criterion_id: row-sums-equal-one
+        type: prediction
+        artifact_ref: resources/week-01/exercises.md
+        priority: P0
+        independent: true
+    verifier: rubric-and-public-test
+    pass_rule: all-required
+    rollback_target: week-01-gate-2
+    escalation_conditions: [数值结果与解释冲突, verifier 不可用]
+    submission:
+      artifact_path: homework_answer/week-01/gate-03.md
+      required_sections: *answer_sections
+      attachment_policy: optional
+
+  - gate_id: week-01-gate-4
+    knowledge_node_ids: [value-read]
+    task_layer: T1-T4
+    action: 先预测后验证只改变一行 V 时 scores、weights 与 output 的变化。
+    checks: [weights 与 V 职责边界, output shape 来源]
+    required_evidence:
+      - criterion_id: value-read-prediction
+        type: prediction
+        artifact_ref: resources/week-01/exercises.md
+        priority: P0
+        independent: true
+    verifier: rubric
+    pass_rule: all-required
+    rollback_target: week-01-gate-3
+    escalation_conditions: [预测与实验使用不同输入]
+    submission:
+      artifact_path: homework_answer/week-01/gate-04.md
+      required_sections: *answer_sections
+      attachment_policy: optional
+
+  - gate_id: week-01-gate-5
+    knowledge_node_ids: [single-head-attention]
+    task_layer: T3
+    action: 按函数契约完成三个公开接口，并提交公开测试与 grader 分类结果。
+    checks: [softmax, project_qkv, scaled_dot_product_attention]
+    required_evidence:
+      - criterion_id: public-tests-pass
+        type: constrained-implementation
+        artifact_ref: labs/week-01/tests/test_week_01_smoke.py
+        priority: P0
+        independent: true
+      - criterion_id: grader-result-recorded
+        type: grader-result
+        artifact_ref: labs/week-01/run_grade.py
+        priority: P0
+        independent: true
+    verifier: public-test-and-grader
+    pass_rule: all-required
+    rollback_target: week-01-gate-4
+    escalation_conditions: [grader 不可用, 命令异常退出]
+    submission:
+      artifact_path: homework_answer/week-01/gate-05.md
+      required_sections: *answer_sections
+      attachment_policy: optional
+
+  - gate_id: week-01-gate-6
+    knowledge_node_ids: [failure-diagnosis, attention-inspector]
+    task_layer: T4-T5
+    action: 解释一次真实失败，并用公开接口完成 attention inspector 迁移。
+    checks: [真实失败解释, 两项预测后验证, 未复制 Lab 内部实现]
+    required_evidence:
+      - criterion_id: failure-explained
+        type: diagnosis
+        artifact_ref: resources/week-01/homework.md
+        priority: P0
+        independent: true
+      - criterion_id: inspector-transfer
+        type: independent-transfer
+        artifact_ref: resources/week-01/notes-template.md
+        priority: P0
+        independent: true
+    verifier: rubric-and-transfer-check
+    pass_rule: all-required-and-separate-submission
+    rollback_target: week-01-gate-5
+    escalation_conditions: [迁移产物复制 Lab, 证据版本冲突]
+    submission:
+      artifact_path: homework_answer/week-01/gate-06.md
+      required_sections: *answer_sections
+      attachment_policy: optional
+
+completion_rule: Gate 0-6 的 P0 criterion 均有独立证据，且迁移证据来自单独提交。
+next_capability: causal-mask

@@ -57,6 +57,44 @@ uv run python labs/week-01/run_grade.py
 
 `pytest` 只运行公开 smoke tests；`run_grade.py` 在本地存在 `.grader/` 时才执行隐藏评分。
 
+## Self-Learning Agent MVP
+
+Week 1 已提供持续运行的终端学习 Agent。学生无需创建或切换分支，只需在自己的课程副本中运行；没有 session 时自动创建，已有 session 时从 Event Ledger 恢复并补齐缺失模板：
+
+```bash
+uv run learning-os agent week-01
+```
+
+首次启动时，Agent 会在 `homework_answer/week-01/` 一次性放好 Gate 0–6 的独立作答文件和附件目录。每个文件已写入该 Gate 的任务、检查点和需要填写的栏目；学生只填写当前 Gate 对应的 `.md`，附件按需加入同 Gate 的 `attachments/` 目录。学生仍必须本人提交本次作答的 Git commit，然后回到 Agent 输入 `/submit`：
+
+```bash
+git add homework_answer/week-01/gate-00.md
+# 若本次使用附件，再单独 git add 对应文件
+git commit -m "answer: week 01 gate 0"
+```
+
+可用命令：`/submit`、`/retry`、`/status`、`/next`、`/help`、`/quit`。普通文字只用于解释当前任务，永远不会触发提交或状态变化。Agent 不写答案、不 commit、不 push；它只要求当前作答已被学生手动 commit。
+
+### Gate 0 作答格式
+
+Gate 0 文件是 `homework_answer/week-01/gate-00.md`，只必填：`闭卷答案`、`推导或机制解释`、`提交自检`。手写或其他附件完全可选；如果主动引用附件，文件必须位于本 Gate 的附件目录且已经 commit。其他 Gate 各自拥有独立模板和各自的必填栏目，不需要从 Gate 0 模板中判断该写什么。
+
+对话 Qwen 只能生成显示文本；系统按 manifest 预置填写模板；独立 Verifier 只能逐项返回 rubric 结果；`PolicyEngine` 和状态机拥有最终状态权。相同答案、附件、rubric 和 verifier 版本会复用第一次有效判定。对话记录不持久化，学习进度只从 `.learning-os/events.jsonl` 恢复。Gate 1–6 尚无 rubric，因此不会让模型自由判分。
+
+真实模型调用只从环境变量读取凭据：
+
+```bash
+cp .env.example .env
+# 在 .env 中填写新 key 后导入当前 shell；不要提交 .env
+set -a && source .env && set +a
+uv run pytest -m live tests/live/test_siliconflow_live.py -q
+uv run pytest -m live tests/live/test_siliconflow_agent_live.py -q
+```
+
+未设置 key 时 live test 会跳过；单元测试不需要网络或真实 key。
+
+完整边界和恢复规则见 [Runtime Foundation 说明](docs/runtime-foundation.md)。
+
 维护者可用以下命令重建并验证所有正式 PDF：
 
 ```bash
