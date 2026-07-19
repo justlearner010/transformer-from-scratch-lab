@@ -1,107 +1,98 @@
 # Transformer From Scratch Lab
 
-一个以理论理解为起点的 Transformer 自学实验室。这里的目标不是“完成一串术语和代码文件”，而是能一路说清：一个 token 的信息如何变成向量、如何选择性读取其他 token、为何不能偷看未来、如何从预测错误中更新参数，最后如何独立把这些机制组合成一个可训练的小模型。
+一个以机制理解为中心的 Transformer 自学实验室。
 
-## 你正在学习什么，为什么按这个顺序？
+这里不追求尽快调用框架层或训练一个大模型。目标是逐步获得一项可检验的
+能力：面对一个 Transformer 组件，能说清它接收什么、计算什么、输出什么、
+为什么需要它，并在实现失败时定位问题。
 
-Transformer 的核心不是一个神秘的大模型，而是一条逐步扩展的信息处理链。我们从能看见、能手算的极小向量开始；每一周只增加一个必要能力，并把它变成下一周的前提。
+## 从这里开始
 
-| 阶段 | 你解决的问题 | 这一步给下一步什么基础 |
-| --- | --- | --- |
-| Week 0 | 如何精确描述一组 token 在矩阵里的形状和数值？ | 能读懂 Q/K/V 的输入输出，而不被 shape 卡住。 |
-| Week 1 | 一个 token 如何依据内容选择性读取其他 token？ | 得到 attention 输出，理解“上下文混合”发生在哪里。 |
-| Week 2 | 什么信息不该被读取？如何把多个机制稳定地连起来？ | 得到单层 Transformer block。 |
-| Week 3 | block 怎样从“预测错了”中改变参数？ | 得到最小可训练的字符级语言模型。 |
-| Week 4 | 不依赖脚手架，能否重新做出来并解释失败？ | 形成独立实现能力，并据此选择下一个大项目。 |
+当前学习入口是 [Week 1：Attention 如何按内容读取信息？](weeks/week-01/README.md)。
+它要求你独立解释并实现单头 scaled dot-product attention。
 
-每一周都沿同一条链推进：**先理解本周问题，再手算一个小例子，随后做小实验、无答案 Lab、书面 Homework，最后写下自己理解发生了什么变化。** 如果某一环没有通过，不赶进度，而是回到表中明确的前置阶段补足。
+如果你还不能稳定判断矩阵乘法、dot product、softmax 与 shape，请先完成
+[Week 0：先看懂信息怎样流动](weeks/week-00/README.md)。Week 0 不是可跳过的
+背景知识；它是 Q/K/V 与 attention 的直接前置。
 
-## 学习闭环
+## 你会建立什么能力
 
 ```text
-课前引导 → 理论材料 → 小习题 → Lab → 理论 Homework → 课后笔记
-                                      ↓
-                              独立字符级 demo → 更大项目
+token 矩阵与 shape
+  → Q / K / V 投影
+  → score、缩放与 stable softmax
+  → attention 的内容读取
+  → mask 与 Transformer block
+  → 训练、诊断与独立重构
 ```
 
-本仓库公开课程材料、题目、函数契约与公开 smoke tests。真正的核心评分器放在本地 `.grader/`（由 `.gitignore` 排除），只输出错误类别和引导，不泄露样例或答案。评分的目的不是替你思考，而是在你已经思考和尝试后，帮你定位“具体在哪个机制上出了错”。
+每一阶段只增加下一个能力所必需的机制。通过标准是证据，而不是读完材料或
+经过多少天：能推导最小例子、在受约束 Lab 中实现、解释一次失败，并把机制
+迁移到未见过的小场景。
 
-## 四周高强度课程
+## 如何学习一周
 
-| 周 | 主题 | 产出 |
-| --- | --- | --- |
-| 0 | 线性代数、softmax、导数与张量契约预备 | 预备习题与环境检查 |
-| 1 | Q/K/V、缩放点积 attention、softmax | attention 理论题与 Lab 关卡 0–2 |
-| 2 | causal mask、LayerNorm、FFN、残差与 block | 完整机制 Lab 与理论 Homework |
-| 3 | 最小语言模型训练 | 不看答案的字符级 demo |
-| 4 | 综合重构、压力测试与架构复盘 | 闭卷期末作业与大项目设计 memo |
+```text
+前置检索 → 精确阅读 → 概念推导 → 无答案 Lab
+                                  ↓
+                    工程反馈 → 故障诊断 → 独立迁移
+```
 
-## 正式学习材料
+公开仓库只提供题目、函数契约与 smoke tests。隐藏评分器位于本地 `.grader/`，
+只返回错误类别与思考提示，不暴露样例或参考实现。它的作用是帮助你定位机制
+缺口，而不是替你完成代码。
 
-PDF 是学习者正式使用和对外分发的课程版本；Markdown、YAML、LaTeX、Lab 与 grader 是维护和运行课程的源文件。学习时先打开当周 Learning Guide，再完成 Problem Set，最后进入代码 Lab。
+## 文件地图
 
-| 阶段 | Learning Guide | Problem Set | 代码与运行说明 |
-| --- | --- | --- | --- |
-| Week 0 | [学习指南 PDF](resources/week-00.pdf) | [题集 PDF](problem-sets/week-00-problem-set.pdf) | [Week 0 工作区](weeks/week-00/README.md) |
-| Week 1 | [学习指南 PDF](resources/week-01.pdf) | [题集 PDF](problem-sets/week-01-problem-set.pdf) | [Week 1 工作区](weeks/week-01/README.md) |
+| 位置 | 用途 |
+| --- | --- |
+| [`weeks/`](weeks/) | 每周导航：为什么学、前置条件、完成标准与入口链接。 |
+| [`resources/`](resources/) | 阅读材料、练习、作业与笔记模板。 |
+| [`tasks/`](tasks/) | 按知识依赖排序的门控任务链。 |
+| [`labs/`](labs/) | 可运行的 starter code、公开测试与评分入口。 |
+| [`docs/`](docs/) | 课程设计与运行规则；进入具体学习前不必通读。 |
 
-从 Week 0 开始。每周建议投入 30–35 小时；由掌握度而非外部截止日期推进。PDF 只提供学习路线、题目与提交标准，不包含答案；完成后的讲评必须与题集分开发布。
+具体的 Week 1 执行顺序与完成门槛见
+[Week 1 导航页](weeks/week-01/README.md)；不要把本 README 当作任务清单。
 
 ## 本地运行
 
 ```bash
 uv sync --group dev
-uv run pytest
+uv run pytest -q
 uv run python labs/week-01/run_grade.py
 ```
 
-`pytest` 只运行公开 smoke tests；`run_grade.py` 在本地存在 `.grader/` 时才执行隐藏评分。
+`pytest` 只运行公开 smoke tests。最后一条命令仅在本地配置 `.grader/` 时运行
+隐藏评分；若 Lab 尚未实现，它会停在当前关卡并给出错误类别，这是正常的学习
+反馈。
 
-## Self-Learning Agent MVP
+## Self-Learning Agent
 
-Week 1 已提供持续运行的终端学习 Agent。学生无需创建或切换分支，只需在自己的课程副本中运行；没有 session 时自动创建，已有 session 时从 Event Ledger 恢复并补齐缺失模板：
+如果你希望把学习过程变成可恢复的主动练习闭环，直接运行：
 
 ```bash
 uv run learning-os agent week-01
 ```
 
-首次启动时，Agent 会在 `homework_answer/week-01/` 一次性放好 Gate 0–6 的独立作答文件和附件目录。每个文件已写入该 Gate 的任务、检查点和需要填写的栏目；学生只填写当前 Gate 对应的 `.md`，附件按需加入同 Gate 的 `attachments/` 目录。学生仍必须本人提交本次作答的 Git commit，然后回到 Agent 输入 `/submit`：
+无需创建或切换分支。首次启动时，系统会在
+`homework_answer/week-01/` 放好 Gate 0–6 的独立作答模板；每份模板只写明
+对应 Gate 的任务、检查点和需要填写的栏目。学生只填写当前 Gate 的 `.md`，
+然后手动提交本次作答：
 
 ```bash
 git add homework_answer/week-01/gate-00.md
-# 若本次使用附件，再单独 git add 对应文件
 git commit -m "answer: week 01 gate 0"
 ```
 
-可用命令：`/submit`、`/retry`、`/status`、`/next`、`/help`、`/quit`。普通文字只用于解释当前任务，永远不会触发提交或状态变化。Agent 不写答案、不 commit、不 push；它只要求当前作答已被学生手动 commit。
+若使用附件，再单独暂存该文件。回到 Agent 输入 `/submit` 即可记录本次证据。
+Agent 不写答案、不 commit、不 push；它只负责准备模板、检查提交、记录状态和
+提示下一步。完整运行规则见 [Runtime Foundation](docs/runtime-foundation.md)。
 
-### Gate 0 作答格式
+## 适合与不适合什么
 
-Gate 0 文件是 `homework_answer/week-01/gate-00.md`，只必填：`闭卷答案`、`推导或机制解释`、`提交自检`。手写或其他附件完全可选；如果主动引用附件，文件必须位于本 Gate 的附件目录且已经 commit。其他 Gate 各自拥有独立模板和各自的必填栏目，不需要从 Gate 0 模板中判断该写什么。
+适合：想从 shape、数据流、数值稳定性和失败诊断出发理解 Transformer 的学习者。
 
-对话 Qwen 只能生成显示文本；系统按 manifest 预置填写模板；独立 Verifier 只能逐项返回 rubric 结果；`PolicyEngine` 和状态机拥有最终状态权。相同答案、附件、rubric 和 verifier 版本会复用第一次有效判定。对话记录不持久化，学习进度只从 `.learning-os/events.jsonl` 恢复。Gate 1–6 尚无 rubric，因此不会让模型自由判分。
-
-真实模型调用只从环境变量读取凭据：
-
-```bash
-cp .env.example .env
-# 在 .env 中填写新 key 后导入当前 shell；不要提交 .env
-set -a && source .env && set +a
-uv run pytest -m live tests/live/test_siliconflow_live.py -q
-uv run pytest -m live tests/live/test_siliconflow_agent_live.py -q
-```
-
-未设置 key 时 live test 会跳过；单元测试不需要网络或真实 key。
-
-完整边界和恢复规则见 [Runtime Foundation 说明](docs/runtime-foundation.md)。
-
-维护者可用以下命令重建并验证所有正式 PDF：
-
-```bash
-uv run python scripts/build_course_pdfs.py
-uv run python scripts/verify_course_pdfs.py
-```
-
-## 项目边界
-
-这个仓库不追求训练大模型、复刻完整论文或尽早进入 RAG。当前目标是能独立解释并实现单层、单头 Transformer 的每个机制。
+不适合：想立即训练大模型、复刻完整论文实现，或只需要调用框架现成
+`Transformer` API 的项目。本仓库先建立单头、单层机制的可解释实现能力；更大
+的模型与工程选择应在这些基础经过验证后再进入。
