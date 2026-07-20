@@ -7,6 +7,7 @@ from learning_runtime.agent.presenter import DeterministicPresenter, SafePresent
 from learning_runtime.agent.protocol import PresenterError
 from learning_runtime.agent.session import AgentSession
 from learning_runtime.agent.siliconflow import SiliconFlowPresenter
+from learning_runtime.env import load_project_env
 from learning_runtime.manifest import ManifestError
 from learning_runtime.runtime import LearningRuntime, SubmissionReceipt
 from learning_runtime.schemas import ActionContract, LearnerState
@@ -58,6 +59,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def build_agent_session(runtime: LearningRuntime) -> AgentSession:
+    load_project_env(runtime.repo_root)
     fallback = DeterministicPresenter()
     try:
         presenter = SafePresenter(SiliconFlowPresenter.from_env(), fallback)

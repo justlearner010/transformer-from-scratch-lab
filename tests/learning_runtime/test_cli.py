@@ -1,7 +1,9 @@
 import pytest
+from pathlib import Path
 
 from learning_runtime.agent.models import AgentTurn
 from learning_runtime.cli import build_parser, run_agent_loop
+from learning_runtime.env import load_project_env
 
 
 @pytest.mark.parametrize(
@@ -54,3 +56,19 @@ def test_run_agent_exits_on_quit():
     )
     assert result == 0
     assert session.handled == ["/status", "/quit"]
+
+
+def test_project_env_loads_missing_provider_settings_without_overwriting_shell(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / ".env").write_text(
+        "SILICONFLOW_API_KEY=local-test-key\nSILICONFLOW_MODEL=local-model\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("SILICONFLOW_MODEL", "shell-model")
+    monkeypatch.delenv("SILICONFLOW_API_KEY", raising=False)
+
+    load_project_env(tmp_path)
+
+    assert __import__("os").environ["SILICONFLOW_API_KEY"] == "local-test-key"
+    assert __import__("os").environ["SILICONFLOW_MODEL"] == "shell-model"
