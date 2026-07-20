@@ -56,10 +56,13 @@ Week 0 矩阵投影
 
 ## 学习入口与门控顺序
 
-1. 完成 [课前引导](../../resources/week-01/pre-class.md) 的检索桥接。
-2. 阅读 [材料](../../resources/week-01/materials.md)，完成其中四个问题。
-3. 依次完成 [知识门控任务](../../tasks/week-01.md) 的 Gate 1–4。
-4. 通过 Gate 4 后，独立完成 [Lab](../../labs/week-01/README.md) 的 Gate 0–3。
+1. 完成 [课前引导](../../resources/week-01/pre-class.md) 的检索桥接，并立即运行对应的
+   [shape micro-lab](../../labs/week-01/micro/README.md)。
+2. 阅读 [材料](../../resources/week-01/materials.md) 中一个机制段，完成一个对应的 micro-lab；
+   不把所有材料读完才开始实验。
+3. 依次完成 [知识门控任务](../../tasks/week-01.md) 的 Gate 0–4；每关都保留预测、实验与解释。
+4. 完成投影、score、softmax 与 value-read 的局部验证后，才进入 [Lab](../../labs/week-01/README.md)
+   的 attention 组装任务。
 5. 完成 [Lab 后工程作业](../../resources/week-01/homework.md)、故障诊断和自主 demo。
 6. 用 [课后笔记模板](../../resources/week-01/notes-template.md) 记录真实证据，再判定是否解锁
    causal mask。

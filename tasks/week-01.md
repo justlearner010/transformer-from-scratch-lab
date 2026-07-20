@@ -3,51 +3,43 @@
 本任务链按知识依赖推进。P0 gate 必须通过才能解锁下一条；P1 gate 的缺口
 可以在同一阶段补足，但不能被完整组合掩盖。
 
-## Gate 0：调用前置能力（P0，T1）
+## Gate 0：shape trace（P0，T1 → T3）
 
 完成 `resources/week-01/pre-class.md` 的闭卷桥接。若不能写出 `QK^T` 与
-`weights @ V` 的 shape，回到 Week 0；不要直接进入 Lab。
+`weights @ V` 的 shape，回到 Week 0；然后立即运行 `shape` micro-lab。不要直接
+进入下一机制。
 
-## Gate 1：读懂信息流（P1，T1）
+## Gate 1：score probe（P0，T1 → T4）
 
-完成材料中的四个问题和 `resources/week-01/exercises.md` 的 Gate 1。产物是一张 shape 表和一次
-“只改 V”预测。
+完成材料中的对应问题后，运行 `score` micro-lab，并构造一次遗漏 `K.T` 的反例。
 
-**解锁条件：** 能解释 Q/K/V 的不同职责。
+**解锁条件：** 能解释 `scores[i,j]` 与 `K.T` 的必要性。
 
-## Gate 2：建立 score 语义（P0，T1 → T4）
+## Gate 2：stable softmax（P0，T1 → T4）
 
-完成 `resources/week-01/exercises.md` 的 Gate 2，并构造一次转置错误的反例。
+预测极端数值与错误 axis 的结果，运行 `softmax` micro-lab，再完成对应练习。
 
-**解锁条件：** 能解释 `scores[i,j]`、每行竞争关系和 `K.T` 的必要性。
+**解锁条件：** 能说明减最大值和 `axis=-1` 保护的性质。
 
-## Gate 3：建立权重契约（P0，T1 → T4）
+## Gate 3：value read（P0，T1 → T4）
 
-完成 `resources/week-01/exercises.md` 的 Gate 3。必须留下一个极端数值例子和一个错误 axis 的
-二维例子。
+先预测仅改变一行 V 后哪些量会变化，运行 `value` micro-lab，再记录观察结果。
 
-**解锁条件：** 能说明 stable softmax、`axis=-1` 与 `sqrt(d_k)` 分别保护
-什么性质。
+**解锁条件：** 能区分匹配权重与读取内容的职责。
 
-## Gate 4：证明 output 是读取 V（P0，T1 → T4）
+## Gate 4：Q/K/V projection（P1，T2 → T3）
 
-完成 `resources/week-01/exercises.md` 的 Gate 4，并先预测后验证一次只改变 V 的实验。
+完成 `project_qkv` 的受约束实现，并验证 shape、错误输入与不原地修改。
 
-**解锁条件：** 能解释 weights 和 V 的职责边界，以及输出 shape 的来源。
+**解锁条件：** 能解释 Q/K/V 三个投影各自消费和保留什么。
 
-## Gate 5：受约束实现（P0/P1，T3）
+## Gate 5：组合 Attention（P0，T3 → T5）
 
-按 `labs/week-01/README.md` 依次完成：
+运行 `compose` micro-lab 后实现 `scaled_dot_product_attention`。它只能复用
+projection、score、softmax 与 value-read 的已验证接口；不得把局部机制重新塞成一
+段不可诊断的大函数。
 
-1. Gate 0：阅读三个函数契约，运行公开 smoke tests；
-2. Gate 1：`softmax`；
-3. Gate 2：`project_qkv`；
-4. Gate 3：`scaled_dot_product_attention`。
-
-每次 hidden grader 失败，只记录类别、原因假设和最小验证；不得要求实现
-答案或修改测试以通过。
-
-## Gate 6：工程反馈与迁移（P0，T4 → T5）
+## Gate 6：工程反馈与迁移（P1，T4 → T5）
 
 完成 `resources/week-01/homework.md` 与 `resources/week-01/notes-template.md`，然后做一个独立的
 attention inspector：调用已实现的公开接口，显示 Q/K/V、scores、weights、

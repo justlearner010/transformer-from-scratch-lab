@@ -87,10 +87,11 @@ gates:
   - gate_id: week-01-gate-0
     knowledge_node_ids: [matrix-shape]
     task_layer: T1
-    action: 闭卷写出 Q、K、V、QK^T、weights 和 weights@V 的 shape。
+    action: 闭卷写出 Q、K、V、QK^T、weights 和 weights@V 的 shape，再运行 shape micro-lab 对照预测。
     checks:
       - shape 是否闭合
       - 是否能解释 K.T
+      - 是否记录 shape micro-lab 的对照结果
     required_evidence:
       - criterion_id: shape-bridge-complete
         type: explanation

@@ -79,7 +79,7 @@ def test_initialize_all_writes_each_gate_its_own_fill_in_format(tmp_path: Path) 
     gate_one = (repo / "homework_answer/week-01/gate-01.md").read_text(
         encoding="utf-8"
     )
-    assert "闭卷写出 Q、K、V、QK^T、weights 和 weights@V 的 shape。" in gate_zero
+    assert "闭卷写出 Q、K、V、QK^T、weights 和 weights@V 的 shape，再运行 shape micro-lab 对照预测。" in gate_zero
     assert "## 闭卷答案" in gate_zero
     assert "## 运行前预测" not in gate_zero
     assert "完成 shape 表，并预测只改变 V 时哪些量保持不变。" in gate_one

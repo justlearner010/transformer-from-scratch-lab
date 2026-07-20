@@ -7,15 +7,20 @@ Week 0 分别验证了矩阵投影、点积与 softmax。本 Lab 要你把它们
 
 你将自行实现 `labs/week-01/src/attention.py` 的函数。只允许使用 NumPy；不得复制外部实现或查看隐藏评分样例。
 
-## 关卡
+## Micro-Lab 顺序
 
-| 关卡 | 目标 | 解锁条件 |
+| 顺序 | 目标 | 解锁条件 |
 | --- | --- | --- |
-| 0 | 熟悉函数契约和 shape | 公开 smoke test 可运行。 |
-| 1 | 实现数值稳定的 softmax | hidden autograder 的数值稳定性与轴检查通过。 |
-| 2 | 实现 Q/K/V 投影 | hidden autograder 的 shape、输入不变性和错误输入检查通过。 |
-| 3 | 实现 scaled dot-product attention | hidden autograder 的缩放、权重与输出性质检查通过。 |
-| 4 | 完成故障诊断 | 根据 grader 的类别报告定位一个故意注入的错误，并写下原因与修复验证。 |
+| 0 | shape trace | 预测后运行 shape 实验，解释 `K.T`。 |
+| 1 | score probe | 构造一次不转置的反例。 |
+| 2 | stable softmax | 验证极端数值与最后一维归一化。 |
+| 3 | value read | 只改变 V，观察 output 而非 weights。 |
+| 4 | Q/K/V projection | 完成投影函数的边界与不变性检查。 |
+| 5 | compose attention | 只组装已验证组件，不重新推导它们。 |
+| 6 | diagnosis + transfer | 用 inspector 解释一次真实失败。 |
+
+每个 micro-lab 的命令和最小案例见 [micro/README.md](micro/README.md)。不要等到
+最后才运行 Lab：每学习一个机制，就立即运行对应实验并记录结果。
 
 ## 给你的约束
 
@@ -41,7 +46,7 @@ uv run python labs/week-01/run_grade.py
 
 第 3 次失败：回到本周理论题，不直接找实现答案。
 
-## Lab 完成后
+## 组装完成后
 
 完成 [Lab 后工程作业](../../resources/week-01/homework.md)，再用
 [笔记模板](../../resources/week-01/notes-template.md) 记录一个真实失败与一次

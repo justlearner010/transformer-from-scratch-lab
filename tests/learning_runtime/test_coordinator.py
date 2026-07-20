@@ -24,7 +24,11 @@ def test_coordinator_returns_one_bounded_action_without_private_content() -> Non
     assert action.current_gate == "week-01-gate-0"
     assert action.action
     assert action.answer_path == "homework_answer/week-01/gate-00.md"
-    assert action.checks == ("shape 是否闭合", "是否能解释 K.T")
+    assert action.checks == (
+        "shape 是否闭合",
+        "是否能解释 K.T",
+        "是否记录 shape micro-lab 的对照结果",
+    )
     assert action.required_sections == (
         "闭卷答案",
         "推导或机制解释",
