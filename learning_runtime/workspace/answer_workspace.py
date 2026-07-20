@@ -28,6 +28,7 @@ FRONTMATTER = re.compile(r"\A---\s*\n(.*?)\n---\s*\n", re.DOTALL)
 SECTION = re.compile(r"^##\s+(.+?)\s*$\n(.*?)(?=^##\s+|\Z)", re.MULTILINE | re.DOTALL)
 MARKDOWN_LINK = re.compile(r"!?\[[^\]]*\]\(([^)]+)\)")
 HTML_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
+TEMPLATE_VERSION = 2
 
 
 class AnswerWorkspace:
@@ -45,7 +46,7 @@ class AnswerWorkspace:
         attachment_dir.mkdir(parents=True, exist_ok=True)
 
         created = not artifact.exists()
-        if created:
+        if created or self._is_outdated_blank_template(artifact):
             artifact.parent.mkdir(parents=True, exist_ok=True)
             artifact.write_text(self._render_template(gate), encoding="utf-8")
         return AnswerLocation(artifact_relative, attachment_relative, created)
@@ -153,6 +154,22 @@ class AnswerWorkspace:
             .replace("{{answer_sections}}", answer_sections)
         )
         return rendered.replace("\n# Gate", f"\n{format_notice}# Gate", 1)
+
+    def _is_outdated_blank_template(self, artifact: Path) -> bool:
+        text = artifact.read_text(encoding="utf-8")
+        frontmatter_match = FRONTMATTER.search(text)
+        if frontmatter_match is None:
+            return False
+        try:
+            metadata = yaml.safe_load(frontmatter_match.group(1)) or {}
+        except yaml.YAMLError:
+            return False
+        if metadata.get("template_version") == TEMPLATE_VERSION:
+            return False
+        sections = {name: body for name, body in SECTION.findall(text)}
+        return bool(sections) and not any(
+            self._has_student_content(body) for body in sections.values()
+        )
 
     @staticmethod
     def _section_prompt(section: str, *, required: bool) -> str:

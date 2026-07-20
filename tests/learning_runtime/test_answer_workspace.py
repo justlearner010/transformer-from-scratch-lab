@@ -87,6 +87,22 @@ def test_initialize_all_writes_each_gate_its_own_fill_in_format(tmp_path: Path) 
     assert "## 推导或机制解释" not in gate_one
 
 
+def test_initialize_all_upgrades_an_untouched_old_template_only(tmp_path: Path) -> None:
+    repo = make_repo(tmp_path)
+    workspace = AnswerWorkspace(repo, MANIFEST)
+    gate = MANIFEST.gate("week-01-gate-1")
+    location = workspace.initialize(gate)
+    path = repo / location.artifact_path
+    path.write_text(
+        path.read_text(encoding="utf-8").replace("template_version: 2", "template_version: 1"),
+        encoding="utf-8",
+    )
+
+    workspace.initialize_all()
+
+    assert "template_version: 2" in path.read_text(encoding="utf-8")
+
+
 def test_initialize_shows_gate_specific_format_before_answer(tmp_path: Path) -> None:
     repo = make_repo(tmp_path)
     workspace = AnswerWorkspace(repo, MANIFEST)
