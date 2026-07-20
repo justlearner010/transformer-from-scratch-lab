@@ -4,7 +4,7 @@
 
 | micro-lab | 命令 | 立即检查什么 |
 | --- | --- | --- |
-| `shape` | `00-shape-trace/starter.py` | Q/K/V、scores、weights、output 的 shape 链 |
+| `shape` | [00-shape-trace/starter.py](00-shape-trace/starter.py) | Q/K/V、scores、weights、output 的 shape 链；错误案例见同目录 README |
 | `score` | `01-score-probe/starter.py` | `Q @ K.T` 的每行/每列语义 |
 | `softmax` | `02-stable-softmax/starter.py` | 极端数值是否仍有限、每行是否和为 1 |
 | `value` | `03-value-read/starter.py` | weights 如何读取 V，而非改变 weights |
