@@ -36,6 +36,13 @@ softmax 与 shape；若这些只停留在术语层，后续很容易把机制错
 5. [Lab 后工程作业](../../resources/week-00/homework.md) 与
    [笔记模板](../../resources/week-00/notes-template.md)
 
+## 你的学习资产
+
+- [Week 0 学习记录](../../homework_answer/week-00/learning-record.md)：你已经形成的
+  shape、点积、输入边界与失败诊断证据；它是 Week 1 的前置资产，不是隐藏的旧资料。
+- [`labs/week-00/src/contracts.py`](../../labs/week-00/src/contracts.py)：你的可运行
+  Week 0 实现；需要回顾某个机制时，优先把记录与对应 Lab 代码一起看。
+
 正式阅读版可使用 [Week 0 Resources PDF](../../resources/week-00.pdf)，正式题集
 可使用 [Week 0 Problem Set PDF](../../problem-sets/week-00-problem-set.pdf)。它们是
 支持材料，不替代上面的 Gate 路径。
