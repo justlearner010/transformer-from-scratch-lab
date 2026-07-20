@@ -8,8 +8,11 @@
 
 ## 从这里开始
 
-当前学习入口是 [Week 1：Attention 如何按内容读取信息？](weeks/week-01/README.md)。
-它要求你独立解释并实现单头 scaled dot-product attention。
+请先打开[学习入口](学习入口.md)。它会把当前 Week、材料、作答区与 Agent
+命令放在一条学习路径上；学习时只需要看到与当前 Gate 有关的内容。
+
+当前主题是 [Week 1：Attention 如何按内容读取信息？](weeks/week-01/README.md)，
+目标是独立解释并实现单头 scaled dot-product attention。
 
 如果你还不能稳定判断矩阵乘法、dot product、softmax 与 shape，请先完成
 [Week 0：先看懂信息怎样流动](weeks/week-00/README.md)。Week 0 不是可跳过的
@@ -53,7 +56,8 @@ token 矩阵与 shape
 | [`docs/`](docs/) | 课程设计与运行规则；进入具体学习前不必通读。 |
 
 具体的 Week 1 执行顺序与完成门槛见
-[Week 1 导航页](weeks/week-01/README.md)；不要把本 README 当作任务清单。
+[Week 1 导航页](weeks/week-01/README.md)；日常学习则以[学习入口](学习入口.md)
+与 Agent 的当前 Gate 为准。
 
 ## 本地运行
 

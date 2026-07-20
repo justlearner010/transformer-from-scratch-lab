@@ -1,0 +1,20 @@
+{
+  // 学习视图：保留学生会直接使用的内容，隐藏课程运行与维护实现。
+  "files.exclude": {
+    "**/.learning-os": true,
+    "**/.pytest_cache": true,
+    "**/.venv": true,
+    "**/__pycache__": true,
+    "**/*.egg-info": true,
+    "autograder": true,
+    "course-manifests": true,
+    "docs": true,
+    "learning_runtime": true,
+    "pdf": true,
+    "problem-sets": true,
+    "scripts": true,
+    "solutions": true,
+    "tasks": true,
+    "tests": true
+  }
+}
