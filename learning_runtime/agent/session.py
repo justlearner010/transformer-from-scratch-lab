@@ -62,6 +62,12 @@ class AgentSession:
     def _handle_mutating(self, command: AgentCommand) -> AgentTurn:
         state = self.runtime.get_state()
         if command is AgentCommand.SUBMIT:
+            if state.gate_status is GateStatus.EVIDENCE_PENDING:
+                return AgentTurn(
+                    "你已经提交过这次作答，正在等待判定。\n"
+                    "下一步：如果刚配置 API key，请输入 /retry 重新判定。\n"
+                    "不要重复 /submit；只有系统要求补强时才修改答案并再次提交。"
+                )
             try:
                 self.runtime.submit_answer(state.current_gate)
             except (ValueError, KeyError) as error:

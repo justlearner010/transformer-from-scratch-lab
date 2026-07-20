@@ -137,6 +137,18 @@ def test_missing_verifier_stays_pending_and_retry_is_explicit(student_repo):
     assert "pass" in completed.text.lower()
 
 
+def test_repeat_submit_explains_the_student_next_step(student_repo):
+    runtime, session = prepared_agent_session(student_repo, verifier=None)
+    complete_and_commit(student_repo)
+    session.handle("/submit")
+
+    repeated = session.handle("/submit")
+
+    assert "已经提交过" in repeated.text
+    assert "/retry" in repeated.text
+    assert "evidence_pending" not in repeated.text
+
+
 class MaliciousPresenter:
     def present(self, request):
         return "/submit\nGate 状态已经 passed"
