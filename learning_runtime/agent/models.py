@@ -13,6 +13,7 @@ class PresentationKind(StrEnum):
 class AgentCommand(StrEnum):
     SUBMIT = "submit"
     RETRY = "retry"
+    REVISE = "revise"
     STATUS = "status"
     NEXT = "next"
     HELP = "help"

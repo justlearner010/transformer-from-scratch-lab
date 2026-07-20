@@ -41,7 +41,7 @@ git add homework_answer/week-01/gate-00.md
 git commit -m "answer: week 01 gate 0"
 ```
 
-回到持续对话输入 `/submit`。其他命令为 `/retry`、`/status`、`/next`、`/help` 和 `/quit`。原有 `start`、`next`、`submit`、`status`、`resume` CLI 继续作为维护接口。
+回到持续对话输入 `/submit`。若系统要求诊断或补强，先输入 `/revise` 开启同一 Gate 的修订；修改作答并手动 commit 后再 `/submit`。其他命令为 `/retry`、`/status`、`/next`、`/help` 和 `/quit`。原有 `start`、`next`、`submit`、`status`、`resume` CLI 继续作为维护接口。
 
 `start` 会先验证 manifest 和当前 Git 工作区；学生可直接在自己的 `main` 作答，只有 detached HEAD 会被拒绝。检查通过后，它会为 Gate 0–6 补齐独立作答文件，再创建事件账本。已有 session 由 Agent 恢复时，同样只补齐缺失模板，不覆盖任何已有作答。
 
@@ -119,7 +119,7 @@ SILICONFLOW_MODEL         可选，默认 Qwen/Qwen3.6-35B-A3B
 
 对话 Presenter 与 Verifier 使用独立调用路径。Presenter 没有 tools，只接收当前 `ActionContract`、公开检查标准、学生最后一条消息和可信判定摘要。它的输出只显示，不写 Ledger，也不会被重新解析成命令。
 
-普通文字不能触发动作。只有本地精确匹配的 `/submit` 才会记录已 commit 证据并调用 Verifier；只有 `evidence_pending` 可以 `/retry`。Presenter 失败时使用确定性模板，Verifier 失败时保留待判定状态。
+普通文字不能触发动作。只有本地精确匹配的 `/submit` 才会记录已 commit 证据并调用 Verifier；只有 `evidence_pending` 可以 `/retry`；只有 `diagnosis_required` 或 `reinforcement_required` 可以 `/revise`。`/revise` 只将当前 Gate 重新打开，不删除先前证据或尝试次数。Presenter 失败时使用确定性模板，Verifier 失败时保留待判定状态。
 
 ## 可验证的 Agent 边界
 

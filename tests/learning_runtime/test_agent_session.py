@@ -75,6 +75,22 @@ class PayloadVerifier:
         }]}, "fixture-response", "fixture", {})
 
 
+class DiagnosisVerifier:
+    identity = VerifierIdentity(
+        "fixture", "fixture", "gate-rubric-v1", "criterion-json-v1",
+        {"temperature": 0},
+    )
+
+    def verify(self, request):
+        return RawVerificationResponse({"criteria": [{
+            "criterion_id": "shape-bridge-complete",
+            "status": "failed",
+            "reason": "K.T 的作用尚未解释，且 shape 链需要重查。",
+            "evidence_quotes": ["K.T 交换 K 的最后两个维度"],
+            "failure_mode": "diagnose",
+        }]}, "diagnosis-response", "fixture", {})
+
+
 def prepared_agent_session(student_repo, verifier, presenter=None):
     git(student_repo, "switch", "-c", "learner/test/week-01")
     runtime = LearningRuntime(student_repo, student_repo / ".learning-os")
@@ -147,6 +163,36 @@ def test_repeat_submit_explains_the_student_next_step(student_repo):
     assert "已经提交过" in repeated.text
     assert "/retry" in repeated.text
     assert "evidence_pending" not in repeated.text
+
+
+def test_revise_reopens_a_diagnosis_without_discarding_attempt_evidence(student_repo):
+    runtime, session = prepared_agent_session(student_repo, DiagnosisVerifier())
+    complete_and_commit(student_repo)
+
+    session.handle("/submit")
+    diagnosed = runtime.get_state()
+    assert diagnosed.gate_status.value == "diagnosis_required"
+    assert diagnosed.attempt_count == 1
+    assert diagnosed.verified_evidence_ids == ("evidence-0001",)
+
+    turn = session.handle("/revise")
+
+    reopened = runtime.get_state()
+    assert reopened.gate_status.value == "active"
+    assert reopened.attempt_count == 1
+    assert reopened.verified_evidence_ids == ("evidence-0001",)
+    assert "修改" in turn.text
+    assert "commit" in turn.text
+    assert "/submit" in turn.text
+
+
+def test_revise_is_rejected_when_the_gate_is_already_active(student_repo):
+    runtime, session = prepared_agent_session(student_repo, verifier=None)
+
+    turn = session.handle("/revise")
+
+    assert runtime.get_state().gate_status.value == "active"
+    assert "不需要修订" in turn.text
 
 
 class MaliciousPresenter:

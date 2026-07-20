@@ -14,7 +14,7 @@ from learning_runtime.verification.registry import EvaluationConflictError
 from learning_runtime.verification.validator import VerificationOutputError
 
 
-HELP_TEXT = "可用命令：/submit /retry /status /next /help /quit"
+HELP_TEXT = "可用命令：/submit /retry /revise /status /next /help /quit"
 
 
 class AgentSession:
@@ -78,6 +78,17 @@ class AgentSession:
         elif command is AgentCommand.RETRY:
             if state.gate_status is not GateStatus.EVIDENCE_PENDING:
                 return AgentTurn("只有 evidence_pending 状态可以 /retry。")
+        elif command is AgentCommand.REVISE:
+            try:
+                action = self.runtime.reopen_for_revision()
+            except ValueError:
+                return AgentTurn("当前 Gate 不需要修订；请按当前任务继续。")
+            turn = self._present(PresentationKind.ACTION, action)
+            return AgentTurn(
+                "已开启修订。请根据上一轮反馈修改当前作答文件，"
+                "完成后由你手动 commit，再输入 /submit。\n\n"
+                + turn.text
+            )
         else:
             raise AssertionError(f"unhandled command: {command}")
 

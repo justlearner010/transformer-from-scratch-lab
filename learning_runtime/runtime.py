@@ -90,6 +90,25 @@ class LearningRuntime:
         state = self.get_state()
         return Coordinator(self._manifest(state.phase_id)).next_action(state)
 
+    def reopen_for_revision(self) -> ActionContract:
+        """Reopen a diagnosed Gate without discarding its prior evidence."""
+        state = self.get_state()
+        if state.gate_status not in {
+            GateStatus.DIAGNOSIS_REQUIRED,
+            GateStatus.REINFORCEMENT_REQUIRED,
+        }:
+            raise ValueError(f"current state {state.gate_status.value} needs no revision")
+        manifest = self._manifest(state.phase_id)
+        transition = LearningStateMachine(manifest).transition(
+            state, GateStatus.ACTIVE
+        )
+        self.ledger.append(
+            transition.event_type,
+            dict(transition.payload),
+            transition.evidence_refs,
+        )
+        return self.next_action()
+
     def submit_answer(self, gate_id: str) -> SubmissionReceipt:
         state = self.get_state()
         manifest = self._manifest(state.phase_id)
