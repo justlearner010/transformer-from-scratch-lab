@@ -6,38 +6,53 @@ learner_workspace:
   answer_root: homework_answer
   template_ref: resources/week-01/answer-template.md
   commit_required: true
-  required_sections: &answer_sections
-    - 闭卷答案
-    - 运行前预测
-    - 推导或机制解释
-    - 验证过程与结果
-    - 预测和结果的差异
-    - 真实错误或当前未知项
-    - 手写与其他附件
-    - 提交自检
 
 knowledge_nodes:
   - node_id: matrix-shape
-    type: mechanism-contract
-    priority: P0
+    primary_type: contract
+    secondary_type: mechanism
+    importance: P0
+    importance_reason: attention 的所有投影与矩阵乘法都依赖 shape 契约闭合
+    dependency_role: hard
+    target_depth: D3
   - node_id: qkv-score-semantics
-    type: mechanism
-    priority: P0
+    primary_type: mechanism
+    importance: P0
+    importance_reason: Q/K/V 职责与 score 语义决定 attention 是否按内容读取
+    dependency_role: hard
+    target_depth: D4
   - node_id: stable-softmax
-    type: mechanism-diagnosis
-    priority: P0
+    primary_type: diagnosis
+    secondary_type: mechanism
+    importance: P0
+    importance_reason: 数值稳定性或 axis 错误会使后续 attention 输出整体失真
+    dependency_role: hard
+    target_depth: D4
   - node_id: value-read
-    type: mechanism
-    priority: P0
+    primary_type: mechanism
+    importance: P0
+    importance_reason: 理解 V 的职责是区分匹配权重与实际读取内容的关键
+    dependency_role: hard
+    target_depth: D3
   - node_id: single-head-attention
-    type: integration
-    priority: P0
+    primary_type: integration
+    importance: P0
+    importance_reason: 是本周所有前置机制的唯一可运行整合产物
+    dependency_role: integration
+    target_depth: D3
   - node_id: failure-diagnosis
-    type: diagnosis
-    priority: P1
+    primary_type: diagnosis
+    importance: P1
+    importance_reason: 真实失败解释能把机制理解转化为可修复的工程判断
+    dependency_role: downstream
+    target_depth: D4
   - node_id: attention-inspector
-    type: integration-procedure
-    priority: P1
+    primary_type: integration
+    secondary_type: procedure
+    importance: P1
+    importance_reason: inspector 检验学生能否把已验证接口迁移到新观察场景
+    dependency_role: integration
+    target_depth: D4
 
 artifact_refs:
   task_chain: tasks/week-01.md
@@ -113,7 +128,7 @@ gates:
     escalation_conditions: [解释与 shape 证据冲突]
     submission:
       artifact_path: homework_answer/week-01/gate-01.md
-      required_sections: *answer_sections
+      required_sections: [预测, 判断依据, 提交自检]
       attachment_policy: optional
 
   - gate_id: week-01-gate-2
@@ -133,7 +148,7 @@ gates:
     escalation_conditions: [转置反例无法区分假设]
     submission:
       artifact_path: homework_answer/week-01/gate-02.md
-      required_sections: *answer_sections
+      required_sections: [计算或反例, 结论, 提交自检]
       attachment_policy: optional
 
   - gate_id: week-01-gate-3
@@ -158,7 +173,7 @@ gates:
     escalation_conditions: [数值结果与解释冲突, verifier 不可用]
     submission:
       artifact_path: homework_answer/week-01/gate-03.md
-      required_sections: *answer_sections
+      required_sections: [预测, 实验结果, 差异与诊断, 提交自检]
       attachment_policy: optional
 
   - gate_id: week-01-gate-4
@@ -178,7 +193,7 @@ gates:
     escalation_conditions: [预测与实验使用不同输入]
     submission:
       artifact_path: homework_answer/week-01/gate-04.md
-      required_sections: *answer_sections
+      required_sections: [预测, 验证结果, 职责解释, 提交自检]
       attachment_policy: optional
 
   - gate_id: week-01-gate-5
@@ -203,7 +218,7 @@ gates:
     escalation_conditions: [grader 不可用, 命令异常退出]
     submission:
       artifact_path: homework_answer/week-01/gate-05.md
-      required_sections: *answer_sections
+      required_sections: [测试结果, grader 结果, 提交自检]
       attachment_policy: optional
 
   - gate_id: week-01-gate-6
@@ -228,7 +243,7 @@ gates:
     escalation_conditions: [迁移产物复制 Lab, 证据版本冲突]
     submission:
       artifact_path: homework_answer/week-01/gate-06.md
-      required_sections: *answer_sections
+      required_sections: [失败现象, 根因, 修复验证, 迁移证据, 提交自检]
       attachment_policy: optional
 
 completion_rule: Gate 0-6 的 P0 criterion 均有独立证据，且迁移证据来自单独提交。

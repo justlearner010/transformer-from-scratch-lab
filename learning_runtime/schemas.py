@@ -37,6 +37,17 @@ class EvidenceRequirement:
 
 
 @dataclass(frozen=True)
+class KnowledgeNode:
+    node_id: str
+    primary_type: str
+    secondary_type: str | None
+    importance: str
+    importance_reason: str
+    dependency_role: str
+    target_depth: str
+
+
+@dataclass(frozen=True)
 class LearnerWorkspace:
     answer_root: str
     template_ref: str
@@ -72,7 +83,7 @@ class CourseManifest:
     course_id: str
     phase_id: str
     capability_question: str
-    knowledge_nodes: tuple[Mapping[str, Any], ...]
+    knowledge_nodes: tuple[KnowledgeNode, ...]
     gates: tuple[GateDefinition, ...]
     dependencies: Mapping[str, tuple[str, ...]]
     artifact_refs: Mapping[str, str]
@@ -88,6 +99,12 @@ class CourseManifest:
             if gate.gate_id == gate_id:
                 return gate
         raise KeyError(gate_id)
+
+    def knowledge_node(self, node_id: str) -> KnowledgeNode:
+        for node in self.knowledge_nodes:
+            if node.node_id == node_id:
+                return node
+        raise KeyError(node_id)
 
 
 @dataclass(frozen=True)

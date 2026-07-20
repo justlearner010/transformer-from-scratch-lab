@@ -83,7 +83,8 @@ def test_initialize_all_writes_each_gate_its_own_fill_in_format(tmp_path: Path) 
     assert "## 闭卷答案" in gate_zero
     assert "## 运行前预测" not in gate_zero
     assert "完成 shape 表，并预测只改变 V 时哪些量保持不变。" in gate_one
-    assert "## 运行前预测" in gate_one
+    assert "## 预测" in gate_one
+    assert "## 推导或机制解释" not in gate_one
 
 
 def test_initialize_shows_gate_specific_format_before_answer(tmp_path: Path) -> None:

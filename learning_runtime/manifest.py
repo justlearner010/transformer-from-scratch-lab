@@ -7,6 +7,7 @@ from learning_runtime.schemas import (
     CourseManifest,
     EvidenceRequirement,
     GateDefinition,
+    KnowledgeNode,
     LearnerWorkspace,
     SubmissionDefinition,
 )
@@ -130,9 +131,45 @@ def load_manifest(path: Path, repo_root: Path) -> CourseManifest:
         failure_routes[name] = relative_path
 
     node_rows = _require_list(root["knowledge_nodes"], "knowledge_nodes")
-    knowledge_nodes = tuple(_require_mapping(row, "knowledge_node") for row in node_rows)
-    node_ids = {str(node.get("node_id")) for node in knowledge_nodes}
-    if "None" in node_ids or len(node_ids) != len(knowledge_nodes):
+    knowledge_nodes: list[KnowledgeNode] = []
+    allowed_types = {
+        "fact", "concept", "mechanism", "procedure", "contract", "diagnosis",
+        "integration", "operation",
+    }
+    for row_value in node_rows:
+        row = _require_mapping(row_value, "knowledge_node")
+        required = {
+            "node_id", "primary_type", "importance", "importance_reason",
+            "dependency_role", "target_depth",
+        }
+        missing_node_fields = sorted(required - row.keys())
+        if missing_node_fields:
+            raise ManifestError(
+                "knowledge_node missing fields: " + ", ".join(missing_node_fields)
+            )
+        primary_type = str(row["primary_type"])
+        if primary_type not in allowed_types:
+            raise ManifestError(f"unsupported knowledge node type: {primary_type}")
+        importance = str(row["importance"])
+        dependency_role = str(row["dependency_role"])
+        target_depth = str(row["target_depth"])
+        if importance not in {"P0", "P1", "P2", "P3"}:
+            raise ManifestError(f"unsupported knowledge node importance: {importance}")
+        if dependency_role not in {"hard", "soft", "corequisite", "downstream", "integration"}:
+            raise ManifestError(f"unsupported dependency role: {dependency_role}")
+        if target_depth not in {"D0", "D1", "D2", "D3", "D4", "D5"}:
+            raise ManifestError(f"unsupported target depth: {target_depth}")
+        knowledge_nodes.append(KnowledgeNode(
+            node_id=str(row["node_id"]),
+            primary_type=primary_type,
+            secondary_type=(str(row["secondary_type"]) if row.get("secondary_type") else None),
+            importance=importance,
+            importance_reason=str(row["importance_reason"]),
+            dependency_role=dependency_role,
+            target_depth=target_depth,
+        ))
+    node_ids = {node.node_id for node in knowledge_nodes}
+    if not node_ids or len(node_ids) != len(knowledge_nodes) or "" in node_ids:
         raise ManifestError("knowledge node IDs must be present and unique")
 
     gate_rows = _require_list(root["gates"], "gates")
@@ -255,7 +292,7 @@ def load_manifest(path: Path, repo_root: Path) -> CourseManifest:
         course_id=str(root["course_id"]),
         phase_id=str(root["phase_id"]),
         capability_question=str(root["capability_question"]),
-        knowledge_nodes=knowledge_nodes,
+        knowledge_nodes=tuple(knowledge_nodes),
         gates=tuple(gates),
         dependencies=dependencies,
         artifact_refs=artifact_refs,

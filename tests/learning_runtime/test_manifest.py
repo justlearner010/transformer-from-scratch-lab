@@ -36,6 +36,12 @@ def test_week_01_manifest_references_existing_course_contracts() -> None:
         "weeks/week-00/README.md"
     )
     assert manifest.gates[0].rollback_target == "week-00-review"
+    shape = manifest.knowledge_node("matrix-shape")
+    assert shape.primary_type == "contract"
+    assert shape.importance == "P0"
+    assert shape.dependency_role == "hard"
+    assert shape.target_depth == "D3"
+    assert "attention" in shape.importance_reason
 
 
 def test_week_01_manifest_defines_the_committed_answer_contract() -> None:
@@ -53,6 +59,10 @@ def test_week_01_manifest_defines_the_committed_answer_contract() -> None:
         "提交自检",
     )
     assert gate.submission.attachment_policy == "optional"
+    diagnosis_gate = manifest.gate("week-01-gate-3")
+    assert diagnosis_gate.submission.required_sections == (
+        "预测", "实验结果", "差异与诊断", "提交自检"
+    )
 
 
 def test_duplicate_gate_id_is_rejected(tmp_path: Path) -> None:
@@ -118,4 +128,12 @@ def test_unknown_attachment_policy_is_rejected(tmp_path: Path) -> None:
     raw["gates"][0]["submission"]["attachment_policy"] = "always-grade"
 
     with pytest.raises(ManifestError, match="always-grade"):
+        load_manifest(write_manifest(tmp_path, raw), ROOT)
+
+
+def test_knowledge_node_requires_a_published_learning_contract(tmp_path: Path) -> None:
+    raw = load_raw_manifest()
+    raw["knowledge_nodes"][0].pop("primary_type")
+
+    with pytest.raises(ManifestError, match="primary_type"):
         load_manifest(write_manifest(tmp_path, raw), ROOT)
