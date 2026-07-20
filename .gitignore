@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 .grader/
 .learning-os/
+.worktrees/
 .env
 tmp/pdfs/
 *.pyc

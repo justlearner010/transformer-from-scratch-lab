@@ -93,6 +93,12 @@ git commit -m "answer: week 01 gate 0"
 Agent 不写答案、不 commit、不 push；它只负责准备模板、检查提交、记录状态和
 提示下一步。完整运行规则见 [Runtime Foundation](docs/runtime-foundation.md)。
 
+## 开发者：并行改动课程与 Agent
+
+学习者不需要分支。若你要并行开发课程内容、状态机或 Agent，请使用 Git
+worktree：学习目录保持在 `main`，每个开发任务拥有独立目录与分支。完整约定与
+可复制命令见[开发协作](开发协作.md)。
+
 ## 适合与不适合什么
 
 适合：想从 shape、数据流、数值稳定性和失败诊断出发理解 Transformer 的学习者。
